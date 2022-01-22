@@ -45,7 +45,7 @@ def normalize_data_into_range(data, min_val, max_val):
     return (data - min(data)) / (max(data) - min(data)) * (max_val - min_val) + min_val
 
 
-def select_data(data: list[Union[Cone, Pose]], sparsity):
+def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
     result = [data[0]]
     indices = [0]
     distance = 0
@@ -53,14 +53,14 @@ def select_data(data: list[Union[Cone, Pose]], sparsity):
     i = 1
 
     while i < len(data):
-        if distance + data[curr].get_coord().distance(data[i].get_coord()) <= sparsity:
+        if distance + data[curr].get_coord().distance(data[i].get_coord()) <= sparsity[indices[-1]]:
             distance += data[curr].get_coord().distance(data[i].get_coord())
             curr = i
             i += 1
         else:
-            if distance < sparsity:
-                difference_after = distance + data[curr].get_coord().distance(data[curr + 1].get_coord()) - sparsity
-                difference_before = sparsity - distance
+            if distance < sparsity[indices[-1]]:
+                difference_after = distance + data[curr].get_coord().distance(data[curr + 1].get_coord()) - sparsity[indices[-1]]
+                difference_before = sparsity[indices[-1]] - distance
                 temp = data[curr + 1] if difference_after <= difference_before else data[curr]
                 curr += 1 if difference_after <= difference_before else 0
                 i += 0 if difference_after <= difference_before else 1

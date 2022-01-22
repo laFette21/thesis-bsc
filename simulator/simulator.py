@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from cone import Cone, ConeColor
+from config import *
 from odometry import Odometry
 from point import Point
 from pose import Pose
@@ -61,16 +62,23 @@ def main():
 
     curvature = np.abs(dx_dt * d2y_dt2 - dy_dt * d2x_dt2) / (dx_dt * dx_dt + dy_dt * dy_dt) ** 1.5
     velocity_data = normalize_data_into_range(curvature, 0.3, 1.0) * VELOCITY
-    cone_distance_data = normalize_data_into_range(curvature, 0.7, 1.0) * CONE_DISTANCE
+    cone_distance_data = normalize_data_into_range(curvature, 0, 1 - (MIN_CONE_DISTANCE / CONE_DISTANCE))
+
+    for i in range(len(cone_distance_data)):
+        cone_distance_data[i] = (1 - cone_distance_data[i]) * CONE_DISTANCE
 
     poses = [Pose(points[i], rotations[i]) for i in range(len(points))]
-    sparse_poses, _ = select_data(poses, (VELOCITY / 1000.0) * ODOMETRY_SAMPLING)
+    # sparse_poses, _ = select_data(poses, (VELOCITY / 1000.0) * ODOMETRY_SAMPLING)
+    sparse_poses, sparse_pose_indices = select_data(poses, (velocity_data / 1000.0) * ODOMETRY_SAMPLING)
 
     odometry: list[Odometry] = []
 
     for i in range(len(sparse_poses) - 1):
         odometry.append(
-            Odometry(VELOCITY, (sparse_poses[i + 1].get_angle() - sparse_poses[i].get_angle()) / ODOMETRY_SAMPLING)
+            Odometry(
+                velocity_data[sparse_pose_indices[i]],
+                (sparse_poses[i + 1].get_angle() - sparse_poses[i].get_angle()) / ODOMETRY_SAMPLING
+            )
         )
 
     odometry.append(Odometry(odometry[-1].get_speed(), odometry[-1].get_angular_velocity()))
@@ -90,6 +98,7 @@ def main():
         #     color='purple',
         # )
     """
+
     gradient_x = np.gradient(x)
     gradient_y = np.gradient(y)
 
@@ -119,7 +128,9 @@ def main():
     # plt.plot(track[0], track[1], '.', color='blue')
     data = [Cone(i, ConeColor.BLUE, p) for i, p in enumerate(interpolated_left_side_points)]
 
-    sparse_blue_cones, _ = select_data(data, CONE_DISTANCE)
+    # sparse_blue_cones, _ = select_data(data, CONE_DISTANCE)
+    sparse_blue_cones, _ = select_data(data, cone_distance_data)
+
     plt.plot(
         [c.get_coord().get_x() for c in sparse_blue_cones],
         [c.get_coord().get_y() for c in sparse_blue_cones],
@@ -140,7 +151,8 @@ def main():
     # plt.plot(track[0], track[1], '.', color='orange')
     data = [Cone(i, ConeColor.YELLOW, p) for i, p in enumerate(interpolated_right_side_points)]
 
-    sparse_yellow_cones, _ = select_data(data, CONE_DISTANCE)
+    # sparse_yellow_cones, _ = select_data(data, CONE_DISTANCE)
+    sparse_yellow_cones, _ = select_data(data, cone_distance_data)
     plt.plot(
         [c.get_coord().get_x() for c in sparse_yellow_cones],
         [c.get_coord().get_y() for c in sparse_yellow_cones],
@@ -164,11 +176,11 @@ def main():
                 for j in range(len(cones)):
                     x2 = sparse_poses[i].get_coord().get_x() + cones[j][1] * math.cos(cones[j][2] + sparse_poses[i].get_angle())
                     y2 = sparse_poses[i].get_coord().get_y() + cones[j][1] * math.sin(cones[j][2] + sparse_poses[i].get_angle())
-                    plt.plot(
-                        [sparse_poses[i].get_coord().get_x(), x2],
-                        [sparse_poses[i].get_coord().get_y(), y2],
-                        color='purple',
-                    )
+                    # plt.plot(
+                    #     [sparse_poses[i].get_coord().get_x(), x2],
+                    #     [sparse_poses[i].get_coord().get_y(), y2],
+                    #     color='purple',
+                    # )
 
                 for c in cones:
                     print('p', timestamp, c[1], c[2] * 180 / math.pi, c[0].get_color().value, c[0].get_index(), file=oF)

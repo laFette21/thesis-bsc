@@ -1,6 +1,7 @@
 CONE_DISTANCE = 5  # m
 DATA_DENSITY = 20000  # interpolated data between points
 FIELD_OF_VIEW = 180  # degrees
+MIN_CONE_DISTANCE = 3  # m
 ODOMETRY_SAMPLING = 5  # ms
 PERCEPTION_SAMPLING = 50  # ms
 RANGE_OF_VIEW = 15  # m
