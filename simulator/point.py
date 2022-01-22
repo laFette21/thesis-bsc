@@ -16,14 +16,14 @@ class Point:
     def rotate(self, radian):
         """Rotate the point around the origin."""
         old_x, old_y = self.x, self.y
-        self.x = old_x * math.cos(radian) - old_y * math.sin(radian)
-        self.y = old_y * math.cos(radian) + old_x * math.sin(radian)
+        self.x = old_x * cos(radian) - old_y * sin(radian)
+        self.y = old_y * cos(radian) + old_x * sin(radian)
 
     def distance(self, other):
         """Calculate the distance between this and another point."""
         dx = self.x - other.x
         dy = self.y - other.y
-        return math.sqrt(dx ** 2 + dy ** 2)
+        return sqrt(dx ** 2 + dy ** 2)
 
     def __str__(self):
         return f"{self.x}, {self.y}"
