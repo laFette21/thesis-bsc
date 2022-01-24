@@ -1,3 +1,4 @@
+import argparse
 import math
 from csv import reader
 
@@ -12,7 +13,7 @@ from pose import Pose
 from utils import *
 
 
-def main():
+def main(directions: bool, perception: bool):
     with open('tracks/FSG21.csv') as iF:
         csv_reader = reader(iF)
         x = []
@@ -61,8 +62,11 @@ def main():
     d2y_dt2 = np.gradient(dy_dt)
 
     curvature = np.abs(dx_dt * d2y_dt2 - dy_dt * d2x_dt2) / (dx_dt * dx_dt + dy_dt * dy_dt) ** 1.5
-    velocity_data = normalize_data_into_range(curvature, 0.3, 1.0) * VELOCITY
+    velocity_data = normalize_data_into_range(curvature, 0, 0.7)
     cone_distance_data = normalize_data_into_range(curvature, 0, 1 - (MIN_CONE_DISTANCE / CONE_DISTANCE))
+
+    for i in range(len(velocity_data)):
+        velocity_data[i] = (1 - velocity_data[i]) * VELOCITY
 
     for i in range(len(cone_distance_data)):
         cone_distance_data[i] = (1 - cone_distance_data[i]) * CONE_DISTANCE
@@ -87,17 +91,16 @@ def main():
     y = [p.get_coord().get_y() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0]
 
     plt.plot(x, y, '.', color='black')
-    """
-    for i in range(len(sparse_poses)):
-        # print(sparse_poses[i].get_angle() * 180 / math.pi)
-        x2 = sparse_poses[i].get_coord().get_x() + 5 * math.cos(sparse_poses[i].get_angle())
-        y2 = sparse_poses[i].get_coord().get_y() + 5 * math.sin(sparse_poses[i].get_angle())
-        # plt.plot(
-        #     [sparse_poses[i].get_coord().get_x(), x2],
-        #     [sparse_poses[i].get_coord().get_y(), y2],
-        #     color='purple',
-        # )
-    """
+    
+    if directions:
+        for i in range(len(sparse_poses)):
+            x2 = sparse_poses[i].get_coord().get_x() + 5 * math.cos(sparse_poses[i].get_angle())
+            y2 = sparse_poses[i].get_coord().get_y() + 5 * math.sin(sparse_poses[i].get_angle())
+            plt.plot(
+                [sparse_poses[i].get_coord().get_x(), x2],
+                [sparse_poses[i].get_coord().get_y(), y2],
+                color='purple',
+            )
 
     gradient_x = np.gradient(x)
     gradient_y = np.gradient(y)
@@ -173,14 +176,15 @@ def main():
             if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0:
                 cones = get_cones_in_front_of_car(sparse_poses[i], all_cones.copy())
 
-                for j in range(len(cones)):
-                    x2 = sparse_poses[i].get_coord().get_x() + cones[j][1] * math.cos(cones[j][2] + sparse_poses[i].get_angle())
-                    y2 = sparse_poses[i].get_coord().get_y() + cones[j][1] * math.sin(cones[j][2] + sparse_poses[i].get_angle())
-                    # plt.plot(
-                    #     [sparse_poses[i].get_coord().get_x(), x2],
-                    #     [sparse_poses[i].get_coord().get_y(), y2],
-                    #     color='purple',
-                    # )
+                if perception:
+                    for j in range(len(cones)):
+                        x2 = sparse_poses[i].get_coord().get_x() + cones[j][1] * math.cos(cones[j][2] + sparse_poses[i].get_angle())
+                        y2 = sparse_poses[i].get_coord().get_y() + cones[j][1] * math.sin(cones[j][2] + sparse_poses[i].get_angle())
+                        plt.plot(
+                            [sparse_poses[i].get_coord().get_x(), x2],
+                            [sparse_poses[i].get_coord().get_y(), y2],
+                            color='green',
+                        )
 
                 for c in cones:
                     print('p', timestamp, c[1], c[2] * 180 / math.pi, c[0].get_color().value, c[0].get_index(), file=oF)
@@ -193,4 +197,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Perception simulator for driverless cars.', allow_abbrev=False)
+    parser.add_argument('-d', '--directions', action='store_true', default=False, required=False, help='show the directional vectors of the car')
+    parser.add_argument('-p', '--perception', action='store_true', default=False, required=False, help='show the vectors to the cones the car is currently detecting')
+    args = parser.parse_args()
+    main(directions=args.directions, perception=args.perception)
