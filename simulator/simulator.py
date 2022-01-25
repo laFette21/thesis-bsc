@@ -81,7 +81,7 @@ def main(directions: bool, perception: bool):
         odometry.append(
             Odometry(
                 velocity_data[sparse_pose_indices[i]],
-                (sparse_poses[i + 1].get_angle() - sparse_poses[i].get_angle()) / ODOMETRY_SAMPLING
+                (sparse_poses[i + 1].get_angle() - sparse_poses[i].get_angle()) / (ODOMETRY_SAMPLING / 1000.0)
             )
         )
 
