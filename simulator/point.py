@@ -26,7 +26,7 @@ class Point:
         return sqrt(dx ** 2 + dy ** 2)
 
     def __str__(self):
-        return f"{self.x}, {self.y}"
+        return f"{self.x} {self.y}"
 
     def get_x(self):
         return self.x
