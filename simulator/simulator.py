@@ -1,6 +1,7 @@
 import argparse
 import math
 from csv import reader
+from random import gauss
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,8 +14,8 @@ from pose import Pose
 from utils import *
 
 
-def main(directions: bool, perception: bool):
-    with open('tracks/FSG21.csv') as iF:
+def main(directions: bool, noisy: bool, perception: bool, route: bool):
+    with open('tracks/kecso.csv') as iF:
         csv_reader = reader(iF)
         x = []
         y = []
@@ -73,7 +74,9 @@ def main(directions: bool, perception: bool):
 
     poses = [Pose(points[i], rotations[i]) for i in range(len(points))]
     # sparse_poses, _ = select_data(poses, (VELOCITY / 1000.0) * ODOMETRY_SAMPLING)
-    sparse_poses, sparse_pose_indices = select_data(poses, (velocity_data / 1000.0) * ODOMETRY_SAMPLING)
+    velocity_data = (velocity_data / 1000.0) * ODOMETRY_SAMPLING
+    sparse_poses, sparse_pose_indices = select_data(poses, velocity_data)
+    velocity_data = (velocity_data / ODOMETRY_SAMPLING) * 1000.0
 
     odometry: list[Odometry] = []
 
@@ -87,11 +90,28 @@ def main(directions: bool, perception: bool):
 
     odometry.append(Odometry(odometry[-1].get_speed(), odometry[-1].get_angular_velocity()))
 
+    if route:
+        coord_x = [0]
+        coord_y = [0]
+        phi = [0]
+
+        for i in range(len(odometry)):
+            if odometry[i].get_angular_velocity() != 0:
+                R = odometry[i].get_speed() / odometry[i].get_angular_velocity()
+            else:
+                R = 0
+            x2 = coord_x[-1] + R * (-math.sin(phi[-1]) + math.sin(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0)))
+            y2 = coord_y[-1] + R * (math.cos(phi[-1]) - math.cos(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0)))
+            plt.plot([coord_x[-1], x2], [coord_y[-1], y2], '-', color='green')
+            coord_x.append(x2)
+            coord_y.append(y2)
+            phi.append(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0))
+
     x = [p.get_coord().get_x() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0]
     y = [p.get_coord().get_y() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0]
 
     plt.plot(x, y, '.', color='black')
-    
+
     if directions:
         for i in range(len(sparse_poses)):
             x2 = sparse_poses[i].get_coord().get_x() + 5 * math.cos(sparse_poses[i].get_angle())
@@ -128,10 +148,8 @@ def main(directions: bool, perception: bool):
 
     track = interpolate_data(data)
     interpolated_left_side_points = [Point(track[0][i], track[1][i]) for i in range(len(track[0]))]
-    # plt.plot(track[0], track[1], '.', color='blue')
     data = [Cone(i, ConeColor.BLUE, p) for i, p in enumerate(interpolated_left_side_points)]
 
-    # sparse_blue_cones, _ = select_data(data, CONE_DISTANCE)
     sparse_blue_cones, _ = select_data(data, cone_distance_data)
 
     plt.plot(
@@ -151,10 +169,8 @@ def main(directions: bool, perception: bool):
     track = interpolate_data(data)
 
     interpolated_right_side_points = [Point(track[0][i], track[1][i]) for i in range(len(track[0]))]
-    # plt.plot(track[0], track[1], '.', color='orange')
     data = [Cone(i, ConeColor.YELLOW, p) for i, p in enumerate(interpolated_right_side_points)]
 
-    # sparse_yellow_cones, _ = select_data(data, CONE_DISTANCE)
     sparse_yellow_cones, _ = select_data(data, cone_distance_data)
     plt.plot(
         [c.get_coord().get_x() for c in sparse_yellow_cones],
@@ -171,7 +187,9 @@ def main(directions: bool, perception: bool):
         print(file=oF)
 
         for i in range(len(sparse_poses)):
-            print('o', timestamp, odometry[i], file=oF)
+            speed = gauss(odometry[i].get_speed(), SPEED_NOISE) if noisy else odometry[i].get_speed()
+            angular_velocity = gauss(odometry[i].get_angular_velocity(), ANGULAR_VELOCITY_NOISE) if noisy else odometry[i].get_angular_velocity()
+            print('o', timestamp, speed, angular_velocity, file=oF)
 
             if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0:
                 cones = get_cones_in_front_of_car(sparse_poses[i], all_cones.copy())
@@ -187,7 +205,9 @@ def main(directions: bool, perception: bool):
                         )
 
                 for c in cones:
-                    print('p', timestamp, c[1], c[2] * 180 / math.pi, c[0].get_color().value, c[0].get_index(), file=oF)
+                    distance = gauss(c[1], DISTANCE_NOISE) if noisy else c[1]
+                    orientation = gauss(c[2], ORIENTATION_NOISE) if noisy else c[2]
+                    print('p', timestamp, distance, orientation * 180 / math.pi, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
 
             timestamp += ODOMETRY_SAMPLING
 
@@ -199,6 +219,8 @@ def main(directions: bool, perception: bool):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perception simulator for driverless cars.', allow_abbrev=False)
     parser.add_argument('-d', '--directions', action='store_true', default=False, required=False, help='show the directional vectors of the car')
+    parser.add_argument('-n', '--noisy', action='store_true', default=False, required=False, help='use noise for the output data')
     parser.add_argument('-p', '--perception', action='store_true', default=False, required=False, help='show the vectors to the cones the car is currently detecting')
+    parser.add_argument('-r', '--route', action='store_true', default=False, required=False, help='show the route the car is traveling')
     args = parser.parse_args()
-    main(directions=args.directions, perception=args.perception)
+    main(directions=args.directions, noisy=args.noisy, perception=args.perception, route=args.route)
