@@ -206,7 +206,7 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
 
                 for c in cones:
                     distance = gauss(c[1], DISTANCE_NOISE) if noisy else c[1]
-                    orientation = gauss(c[2], ORIENTATION_NOISE) if noisy else c[2]
+                    orientation = gauss(c[2], BEARING_NOISE) if noisy else c[2]
                     print('p', timestamp, distance, orientation * 180 / math.pi, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
 
             timestamp += ODOMETRY_SAMPLING
