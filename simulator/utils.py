@@ -19,6 +19,7 @@ def get_cones_in_front_of_car(pose: Pose, cones: list[Cone]):
     ]
 
     for c in cones_in_range:
+        original_position = c.get_coord()
         temp = Cone(c.get_index(), c.get_color(), c.get_coord())
         temp.coord.move(-pose.get_coord().get_x(), -pose.get_coord().get_y())
         temp.coord.rotate(-pose.get_angle())
@@ -27,6 +28,7 @@ def get_cones_in_front_of_car(pose: Pose, cones: list[Cone]):
             temp.get_coord().get_y(),
             temp.get_coord().get_x()
         )
+        temp.coord = original_position
 
         if abs(angle) <= radians(FIELD_OF_VIEW / 2.0):
             result.append((temp, distance, angle))
@@ -57,8 +59,12 @@ def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
             i += 1
         else:
             distance_before = distance - data[i].get_coord().distance(data[i - 1].get_coord())
-            sparsity[indices[-1]] = distance_before if sparsity[indices[-1]] - distance_before < distance - sparsity[indices[-1]] else distance
-            result.append(data[i - 1] if sparsity[indices[-1]] - distance_before <= distance - sparsity[indices[-1]] else data[i])
+            if data[i - 1] not in result:
+                sparsity[indices[-1]] = distance_before if sparsity[indices[-1]] - distance_before < distance - sparsity[indices[-1]] else distance
+                result.append(data[i - 1] if sparsity[indices[-1]] - distance_before <= distance - sparsity[indices[-1]] else data[i])
+            else:
+                sparsity[indices[-1]] = distance
+                result.append(data[i])
             indices.append(data.index(result[-1]))
             if indices[-1] < i:
                 i -= 1
