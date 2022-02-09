@@ -10,8 +10,9 @@ from point import Point
 from pose import Pose
 
 
-def get_cones_in_front_of_car(pose: Pose, cones: list[Cone]):
+def get_cones_in_front_of_car(pose, cones: list[Cone]):
     result: list[tuple[Cone, float, float]] = []
+    pose = Pose(Point(pose[0], pose[1]), pose[2])
     cones_in_range = [
         Cone(c.get_index(), c.get_color(), c.get_coord())
         for c in cones
