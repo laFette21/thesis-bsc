@@ -1,7 +1,7 @@
 import argparse
 import math
 from csv import reader
-from random import gauss
+from os import path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +16,8 @@ from utils import *
 
 def main(directions: bool, noisy: bool, perception: bool, route: bool):
     with open('tracks/kecso.csv') as iF:
+        _, filename = path.split(iF.name)
+        filename = filename.split('.')[0]
         csv_reader = reader(iF)
         x = []
         y = []
@@ -73,7 +75,6 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
         cone_distance_data[i] = (1 - cone_distance_data[i]) * CONE_DISTANCE
 
     poses = [Pose(points[i], rotations[i]) for i in range(len(points))]
-    # sparse_poses, _ = select_data(poses, (VELOCITY / 1000.0) * ODOMETRY_SAMPLING)
     velocity_data = (velocity_data / 1000.0) * ODOMETRY_SAMPLING
     sparse_poses, sparse_pose_indices = select_data(poses, velocity_data)
     velocity_data = (velocity_data / ODOMETRY_SAMPLING) * 1000.0
@@ -188,9 +189,7 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
         color='orange'
     )
 
-    timestamp = 0
     all_cones = [*sparse_blue_cones, *sparse_yellow_cones]
-
     actual_poses = np.zeros((len(odometry), 3))
     ts = ODOMETRY_SAMPLING / 1000.0
 
@@ -201,36 +200,9 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
 
     plt.plot(actual_poses[:, 0], actual_poses[:, 1], '.', color='purple')
 
-    with open('output.txt', 'w') as oF:
-        for i in range(np.size(actual_poses, 0)):
-            speed = odometry[i].get_speed()
-            angular_velocity = odometry[i].get_angular_velocity()
-
-            if noisy:
-                speed += speed * gauss(0, SPEED_NOISE)
-                angular_velocity += angular_velocity * gauss(0, ANGULAR_VELOCITY_NOISE)
-
-            print('o', timestamp, speed, angular_velocity, file=oF)
-
-            if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0:
-                cones = get_cones_in_front_of_car(actual_poses[i], all_cones.copy())
-
-                if perception:
-                    for j in range(len(cones)):
-                        x2 = actual_poses[i, 0] + cones[j][1] * math.cos(cones[j][2] + actual_poses[i, 2])
-                        y2 = actual_poses[i, 1] + cones[j][1] * math.sin(cones[j][2] + actual_poses[i, 2])
-                        plt.plot(
-                            [actual_poses[i, 0], x2],
-                            [actual_poses[i, 1], y2],
-                            color='green',
-                        )
-
-                for c in cones:
-                    distance = c[1]  # gauss(c[1], DISTANCE_NOISE ** 2) if noisy else c[1]
-                    orientation = c[2]  # gauss(c[2], BEARING_NOISE ** 2) if noisy else c[2]
-                    print('p', timestamp, distance, orientation * 180 / math.pi, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
-
-            timestamp += ODOMETRY_SAMPLING
+    write_data_to_file(f'output_{filename}.txt', cones=all_cones.copy(), poses=actual_poses.copy(), odometry=odometry.copy(), noisy=False)
+    if noisy:
+        write_data_to_file(f'output_{filename}_noisy.txt', cones=all_cones.copy(), poses=actual_poses.copy(), odometry=odometry.copy(), noisy=True)
 
     plt.axis('equal')
     plt.savefig('track.png', dpi=500)

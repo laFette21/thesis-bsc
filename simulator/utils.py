@@ -1,7 +1,8 @@
 from math import atan2, radians
 from typing import Union
 
-from numpy import linspace, max, min
+from numpy import cos, linspace, max, min, pi, sin, size
+from numpy.random import normal
 from scipy.interpolate import splev, splprep
 
 from cone import Cone
@@ -72,3 +73,38 @@ def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
             distance = 0
 
     return result, indices
+
+
+def write_data_to_file(filename, cones, poses, odometry, noisy):
+    timestamp = 0
+
+    with open(filename, 'w') as oF:
+        for i in range(size(poses, 0)):
+            speed = odometry[i].get_speed()
+            angular_velocity = odometry[i].get_angular_velocity()
+
+            if noisy:
+                speed += speed * normal(0, SPEED_NOISE)
+                angular_velocity += angular_velocity * normal(0, ANGULAR_VELOCITY_NOISE)
+
+            print('o', timestamp / 1000.0, speed, angular_velocity, file=oF)
+
+            if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0:
+                cones_in_range = get_cones_in_front_of_car(poses[i], cones)
+
+                # if perception:
+                #     for j in range(len(cones_in_range)):
+                #         x2 = poses[i, 0] + cones_in_range[j][1] * cos(cones[j][2] + poses[i, 2])
+                #         y2 = poses[i, 1] + cones_in_range[j][1] * sin(cones[j][2] + poses[i, 2])
+                #         plt.plot(
+                #             [poses[i, 0], x2],
+                #             [poses[i, 1], y2],
+                #             color='green',
+                #         )
+
+                for c in cones_in_range:
+                    distance = c[1]  # normal(c[1], DISTANCE_NOISE ** 2) if noisy else c[1]
+                    orientation = c[2]  # normal(c[2], BEARING_NOISE ** 2) if noisy else c[2]
+                    print('p', timestamp / 1000.0, distance, orientation * 180 / pi, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
+
+            timestamp += ODOMETRY_SAMPLING
