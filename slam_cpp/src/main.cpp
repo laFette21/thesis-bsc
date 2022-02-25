@@ -24,8 +24,8 @@ struct LandmarkErrorFunction
 
         temp = rotation.transpose() * temp;
 
-        residual[0] = temp(0);
-        residual[1] = temp(1);
+        residual[0] = temp(0) - landmark[0];
+        residual[1] = temp(1) - landmark[1];
 
         return true;
     }
@@ -56,8 +56,8 @@ int main()
     double init_pose[] = {0, 0, 0};
     double init_landmark[] = {1, 0};
 
-    double pose[][3] = {{0, 0, 0}, {0.5, 0, 0}};
-    double landmark[][2] = {{1, 0}, {1.5, 0}};
+    double pose[][3] = {{0, 0, 0}, {1, 0, 0}};
+    double landmark[][2] = {{1, 0}, {2, 0}};
 
     // Build the problem.
     ceres::Problem problem;
