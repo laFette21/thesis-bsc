@@ -71,11 +71,16 @@ struct LandmarkErrorFunction
 struct PoseErrorFunction
 {
     template <typename T>
-    bool operator()(const T* const prev_pose, const T* const curr_pose, T* residual) const
+    bool operator()(const T* const prev_pose, const T* const curr_pose, const T* const measurement, T* residual) const
     {
-        residual[0] = curr_pose[0] - prev_pose[0];
-        residual[1] = curr_pose[1] - prev_pose[1];
-        residual[2] = curr_pose[2] - prev_pose[2];
+        Eigen::Matrix3<T> prev_pose_transformation = v2t(Eigen::Vector3<T>(prev_pose));
+        Eigen::Matrix3<T> curr_pose_transformation = v2t(Eigen::Vector3<T>(curr_pose));
+        Eigen::Matrix3<T> measurement_transformation = v2t(Eigen::Vector3<T>(measurement));
+        Eigen::Vector3<T> vec = t2v((curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation);
+
+        residual[0] = vec[0];
+        residual[1] = vec[1];
+        residual[2] = vec[2];
 
         return true;
     }
@@ -158,6 +163,16 @@ int main()
         std::cout << i + 1 <<  ". lm: " << init_landmark[i][0] << " " << init_landmark[i][1] << " -> " << landmark[i][0] << " " << landmark[i][1] << std::endl;
         std::cout << i + 1 <<  ". meas: " << init_landmark_measurements[i][0] << " " << init_landmark_measurements[i][1] << " -> " << landmark_measurements[i][0] << " " << landmark_measurements[i][1] << std::endl;
     }
+
+    Eigen::Matrix3<double> prev_pose_transformation = v2t(Eigen::Vector3<double>(0, 0, 0));
+    std::cout << prev_pose_transformation << std::endl << std::endl;
+    Eigen::Matrix3<double> curr_pose_transformation = v2t(Eigen::Vector3<double>(1, 1, 1));
+    std::cout << curr_pose_transformation << std::endl << std::endl;
+    Eigen::Matrix3<double> measurement_transformation = v2t(Eigen::Vector3<double>(1, 1, 1));
+    std::cout << measurement_transformation << std::endl << std::endl;
+    Eigen::Vector3<double> vec = t2v<double>((curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation);
+    std::cout << (curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation << std::endl << std::endl;
+    std::cout << vec << std::endl << std::endl;
 
     return 0;
 }
