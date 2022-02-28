@@ -65,13 +65,18 @@ int main()
     }
     */
 
-    double init_pose[] = {0, 0, 0};
-    double init_landmark[] = {10, -1};
-    double init_landmark2[] = {10, 1};
+    double init_pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
+    double init_landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
+    double init_landmark2[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
 
     double pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
     double landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
     double landmark2[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
+
+    // TODO: LOOP for processing perception
+        // TODO: LOOP for all the cones visible from the current pose
+        // TODO: Solve the problem
+        // TODO: REPEAT
 
     // Build the problem.
     ceres::Problem problem;
@@ -83,8 +88,11 @@ int main()
 
     for (size_t i = 0; i < 10; ++i)
     {
-        problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark[i]);
-        problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark2[i]);
+        for (size_t j = 0; j < 10; ++j)
+        {
+            problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark[j]);
+            problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark2[j]);
+        }
     }
 
     // Run the solver!
@@ -95,9 +103,13 @@ int main()
     Solve(options, &problem, &summary);
 
     std::cout << summary.FullReport() << std::endl;
-    std::cout << "p: " << init_pose[0] << " " << init_pose[1] << " " << init_pose[2] << " -> " << pose[0][0] << " " << pose[0][1] << " " << pose[0][2] << std::endl;
-    std::cout << "lm1: " << init_landmark[0] << " " << init_landmark[1] << " -> " << landmark[0][0] << " " << landmark[0][1] << std::endl;
-    std::cout << "lm2: " << init_landmark2[0] << " " << init_landmark2[1] << " -> " << landmark2[0][0] << " " << landmark2[0][1] << std::endl;
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+        std::cout << i + 1 << ". p: " << init_pose[i][0] << " " << init_pose[i][1] << " " << init_pose[i][2] << " -> " << pose[i][0] << " " << pose[i][1] << " " << pose[i][2] << std::endl;
+        std::cout << i + 1 <<  ". lm1: " << init_landmark[i][0] << " " << init_landmark[i][1] << " -> " << landmark[i][0] << " " << landmark[i][1] << std::endl;
+        std::cout << i + 1 <<  ". lm2: " << init_landmark2[i][0] << " " << init_landmark2[i][1] << " -> " << landmark2[i][0] << " " << landmark2[i][1] << std::endl;
+    }
 
     return 0;
 }
