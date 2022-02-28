@@ -9,7 +9,7 @@
 struct LandmarkErrorFunction
 {
     template <typename T>
-    bool operator()(const T* const pose, const T* const landmark, T* residual) const
+    bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
     {
         const T cos_psi = ceres::cos(pose[2]);
         const T sin_psi = ceres::sin(pose[2]);
@@ -23,8 +23,8 @@ struct LandmarkErrorFunction
 
         temp = rotation.transpose() * temp;
 
-        residual[0] = temp(0) - landmark[0];
-        residual[1] = temp(1) - landmark[1];
+        residual[0] = temp(0) - measurement[0];
+        residual[1] = temp(1) - measurement[1];
 
         return true;
     }
@@ -65,13 +65,21 @@ int main()
     }
     */
 
-    double init_pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
-    double init_landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
-    double init_landmark2[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
+    std::vector<Eigen::Vector3<double>> init_pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
+    std::vector<Eigen::Vector2<double>> init_landmark = {{1, -1}, {1.5, -1}, {2, -1}};
+    std::vector<Eigen::Vector2<double>> init_landmark_measurements = {{1, -1}, {1, -1}, {1, -1}};
 
-    double pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
-    double landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
-    double landmark2[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
+    std::vector<Eigen::Vector3<double>> pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
+    std::vector<Eigen::Vector2<double>> landmark = {{1, -1}, {1.5, -1}, {2, -1}};
+    std::vector<Eigen::Vector2<double>> landmark_measurements = {{1, -1}, {1, -1}, {1, -1}};
+
+    // double init_pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
+    // double init_landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
+    // double init_landmark_measurements[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
+
+    // double pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
+    // double landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
+    // double landmark_measurements[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
 
     // TODO: LOOP for processing perception
         // TODO: LOOP for all the cones visible from the current pose
@@ -84,16 +92,18 @@ int main()
     // Set up the only cost function (also known as residual). This uses
     // auto-differentiation to obtain the derivative (jacobian).
     ceres::CostFunction* cost_function =
-        new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 1, 1, 1>(new LandmarkErrorFunction);
+        new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 1, 1, 1, 1>(new LandmarkErrorFunction);
 
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < pose.size(); ++i)
     {
-        for (size_t j = 0; j < 10; ++j)
+        for (size_t j = 0; j < landmark.size(); ++j)
         {
-            problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark[j]);
-            problem.AddResidualBlock(cost_function, nullptr, pose[i], landmark2[j]);
+            problem.AddResidualBlock(cost_function, nullptr, pose[i].data(), landmark[j].data(), landmark_measurements[i].data());
+            problem.SetParameterBlockConstant(landmark_measurements[i].data());
         }
     }
+
+    problem.SetParameterBlockConstant(pose[0].data());
 
     // Run the solver!
     ceres::Solver::Options options;
@@ -104,11 +114,11 @@ int main()
 
     std::cout << summary.FullReport() << std::endl;
 
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < pose.size(); ++i)
     {
         std::cout << i + 1 << ". p: " << init_pose[i][0] << " " << init_pose[i][1] << " " << init_pose[i][2] << " -> " << pose[i][0] << " " << pose[i][1] << " " << pose[i][2] << std::endl;
-        std::cout << i + 1 <<  ". lm1: " << init_landmark[i][0] << " " << init_landmark[i][1] << " -> " << landmark[i][0] << " " << landmark[i][1] << std::endl;
-        std::cout << i + 1 <<  ". lm2: " << init_landmark2[i][0] << " " << init_landmark2[i][1] << " -> " << landmark2[i][0] << " " << landmark2[i][1] << std::endl;
+        std::cout << i + 1 <<  ". lm: " << init_landmark[i][0] << " " << init_landmark[i][1] << " -> " << landmark[i][0] << " " << landmark[i][1] << std::endl;
+        std::cout << i + 1 <<  ". meas: " << init_landmark_measurements[i][0] << " " << init_landmark_measurements[i][1] << " -> " << landmark_measurements[i][0] << " " << landmark_measurements[i][1] << std::endl;
     }
 
     return 0;
