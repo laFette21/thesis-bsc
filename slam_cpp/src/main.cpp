@@ -6,16 +6,54 @@
 #include "../include/perceptionenumerator.h"
 
 
+template <typename T>
+Eigen::Matrix2<T> RotationMatrix2D(T theta)
+{
+    Eigen::Matrix2<T> result;
+
+    const T cos_theta = ceres::cos(theta);
+    const T sin_theta = ceres::sin(theta);
+
+    result << cos_theta, -sin_theta, sin_theta, cos_theta;
+
+    return result;
+}
+
+template <typename T>
+Eigen::Vector3<T> t2v(Eigen::Matrix3<T> transformation)
+{
+    Eigen::Vector3<T> result;
+
+    result[0] = transformation(0, 2);
+    result[1] = transformation(1, 2);
+    result[2] = ceres::atan2(transformation(1, 0), transformation(0, 0));
+
+    return result;
+}
+
+template <typename T>
+Eigen::Matrix3<T> v2t(Eigen::Vector3<T> vector)
+{
+    Eigen::Matrix3<T> result = Eigen::Matrix3<T>::Zero();
+    Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(vector[2]);
+
+    result(0, 0) = rotation(0, 0);
+    result(0, 1) = rotation(0, 1);
+    result(1, 0) = rotation(1, 0);
+    result(1, 1) = rotation(1, 1);
+    result(0, 2) = vector[0];
+    result(1, 2) = vector[1];
+    result(2, 2) = 1;
+
+    return result;
+}
+
 struct LandmarkErrorFunction
 {
     template <typename T>
     bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
     {
-        const T cos_psi = ceres::cos(pose[2]);
-        const T sin_psi = ceres::sin(pose[2]);
-
-        Eigen::Matrix2<T> rotation;
-        rotation << cos_psi, -sin_psi, sin_psi, cos_psi;
+        Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
 
         Eigen::Vector2<T> temp;
         temp(0) = landmark[0] - pose[0];
@@ -92,7 +130,7 @@ int main()
     // Set up the only cost function (also known as residual). This uses
     // auto-differentiation to obtain the derivative (jacobian).
     ceres::CostFunction* cost_function =
-        new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 1, 1, 1, 1>(new LandmarkErrorFunction);
+        new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
 
     for (size_t i = 0; i < pose.size(); ++i)
     {
