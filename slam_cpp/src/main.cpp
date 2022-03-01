@@ -20,7 +20,7 @@ Eigen::Matrix2<T> RotationMatrix2D(T theta)
 }
 
 template <typename T>
-Eigen::Vector3<T> t2v(Eigen::Matrix3<T> transformation)
+Eigen::Vector3<T> t2v(const Eigen::Matrix3<T>& transformation)
 {
     Eigen::Vector3<T> result;
 
@@ -32,17 +32,12 @@ Eigen::Vector3<T> t2v(Eigen::Matrix3<T> transformation)
 }
 
 template <typename T>
-Eigen::Matrix3<T> v2t(Eigen::Vector3<T> vector)
+Eigen::Matrix3<T> v2t(const Eigen::Vector3<T>& vector)
 {
     Eigen::Matrix3<T> result = Eigen::Matrix3<T>::Zero();
-    Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(vector[2]);
 
-    result(0, 0) = rotation(0, 0);
-    result(0, 1) = rotation(0, 1);
-    result(1, 0) = rotation(1, 0);
-    result(1, 1) = rotation(1, 1);
-    result(0, 2) = vector[0];
-    result(1, 2) = vector[1];
+    result.topLeftCorner(2, 2) = RotationMatrix2D<T>(vector[2]);
+    result.topRightCorner(2, 1) = vector.head(2);
     result(2, 2) = 1;
 
     return result;
