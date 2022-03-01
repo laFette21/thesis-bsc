@@ -81,6 +81,9 @@ struct PoseErrorFunction
     }
 };
 
+#define NORMAL_MODE
+#ifdef NORMAL_MODE
+
 int main()
 {
     /*
@@ -171,3 +174,69 @@ int main()
 
     return 0;
 }
+
+#else
+
+#define CATCH_CONFIG_MAIN
+#include "../include/catch.hpp"
+
+
+TEST_CASE("Test RotationMatrix2D", "[utility]")
+{
+    SECTION("Identity matrix with theta = 0")
+    {
+        REQUIRE(Eigen::Matrix2d::Identity() == RotationMatrix2D<double>(0));
+    }
+
+    SECTION("Matrix with theta = 1")
+    {
+        Eigen::Matrix2d matrix;
+
+        const double sin_theta = sin(1);
+        const double cos_theta = cos(1);
+
+        matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
+
+        REQUIRE(matrix == RotationMatrix2D<double>(1));
+    }
+}
+
+TEST_CASE("Test t2v", "[utility]")
+{
+    SECTION("Vector of zeros with identity matrix")
+    {
+        REQUIRE(Eigen::Vector3d::Zero() == t2v<double>(Eigen::Matrix3d::Identity()));
+    }
+
+    SECTION("Vector of ones with transformation matrix")
+    {
+        Eigen::Matrix3d matrix = Eigen::Matrix3d::Zero();
+
+        matrix.topLeftCorner(2, 2) = RotationMatrix2D<double>(1);
+        matrix.topRightCorner(2, 1) = Eigen::Vector2<double>::Ones();
+        matrix(2, 2) = 1;
+
+        REQUIRE(Eigen::Vector3d::Ones() == t2v<double>(matrix));
+    }
+}
+
+TEST_CASE("Test v2t", "[utility]")
+{
+    SECTION("Identity matrix with vector of zeros")
+    {
+        REQUIRE(Eigen::Matrix3d::Identity() == v2t<double>(Eigen::Vector3d::Zero()));
+    }
+
+    SECTION("Transformation matrix with vector of ones")
+    {
+        Eigen::Matrix3d matrix = Eigen::Matrix3d::Zero();
+
+        matrix.topLeftCorner(2, 2) = RotationMatrix2D<double>(1);
+        matrix.topRightCorner(2, 1) = Eigen::Vector2<double>::Ones();
+        matrix(2, 2) = 1;
+
+        REQUIRE(matrix == v2t<double>(Eigen::Vector3d::Ones()));
+    }
+}
+
+#endif
