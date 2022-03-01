@@ -36,8 +36,8 @@ Eigen::Matrix3<T> v2t(const Eigen::Vector3<T>& vector)
 {
     Eigen::Matrix3<T> result = Eigen::Matrix3<T>::Zero();
 
-    result.topLeftCorner(2, 2) = RotationMatrix2D<T>(vector[2]);
-    result.topRightCorner(2, 1) = vector.head(2);
+    result.template topLeftCorner<2, 2>() = RotationMatrix2D<T>(vector[2]);
+    result.template topRightCorner<2, 1>() = vector.template head<2>();
     result(2, 2) = 1;
 
     return result;
