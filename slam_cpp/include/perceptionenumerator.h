@@ -7,26 +7,7 @@
 #include <sstream>
 #include <vector>
 
-struct Pose
-{
-    double m_x;
-    double m_y;
-    double m_psi;
-    int m_id;
-
-    Pose(int id = -1, double x = 0, double y = 0, double psi = 0): m_id(id), m_x(x), m_y(y), m_psi(psi) {}
-};
-
-struct Landmark
-{
-    double m_distance;
-    double m_bearing;
-    int m_color;
-    int m_id;
-
-    Landmark(int id = -1, double distance = 0, double bearing = 0, int color = 0):
-        m_id(id), m_distance(distance), m_bearing(bearing), m_color(color) {}
-};
+#include "types.h"
 
 struct Perception
 {
@@ -34,7 +15,8 @@ struct Perception
     Pose m_pose;
 
     Perception() {}
-    Perception(Pose& pose, std::vector<Landmark>& landmarks): m_pose(pose), m_landmarks(landmarks) {}
+    Perception(const Pose& pose, const std::vector<Landmark>& landmarks): m_pose(pose), m_landmarks(landmarks) {}
+
     friend std::ostream& operator<<(std::ostream&, const Perception&);
 };
 

@@ -4,12 +4,10 @@
 std::ostream& operator<<(std::ostream& os, const Perception& per)
 {
     os << std::setprecision(16);
-    os << "pose: " << per.m_pose.m_id << ' ' << per.m_pose.m_x
-        << ' ' << per.m_pose.m_y << ' ' << per.m_pose.m_psi << std::endl;
+    os << "pose: " << per.m_pose << std::endl;
 
     for (size_t i = 0; i < per.m_landmarks.size(); ++i)
-        os << "lm: " << per.m_landmarks[i].m_id << ' ' << per.m_landmarks[i].m_distance
-            << ' ' << per.m_landmarks[i].m_bearing << ' ' << per.m_landmarks[i].m_color << std::endl; 
+        os << "lm: " << per.m_landmarks[i] << std::endl; 
 
     return os;
 }
