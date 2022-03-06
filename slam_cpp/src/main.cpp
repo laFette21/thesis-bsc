@@ -4,108 +4,45 @@
 #include <ceres/ceres.h>
 
 #include "../include/perceptionenumerator.h"
+#include "../include/graph.h"
 
-
-template <typename T>
-Eigen::Matrix2<T> RotationMatrix2D(T theta)
-{
-    Eigen::Matrix2<T> result;
-
-    const T cos_theta = ceres::cos(theta);
-    const T sin_theta = ceres::sin(theta);
-
-    result << cos_theta, -sin_theta, sin_theta, cos_theta;
-
-    return result;
-}
-
-template <typename T>
-Eigen::Vector3<T> t2v(const Eigen::Matrix3<T>& transformation)
-{
-    Eigen::Vector3<T> result;
-
-    result[0] = transformation(0, 2);
-    result[1] = transformation(1, 2);
-    result[2] = ceres::atan2(transformation(1, 0), transformation(0, 0));
-
-    return result;
-}
-
-template <typename T>
-Eigen::Matrix3<T> v2t(const Eigen::Vector3<T>& vector)
-{
-    Eigen::Matrix3<T> result = Eigen::Matrix3<T>::Zero();
-
-    result.template topLeftCorner<2, 2>() = RotationMatrix2D<T>(vector[2]);
-    result.template topRightCorner<2, 1>() = vector.template head<2>();
-    result(2, 2) = 1;
-
-    return result;
-}
-
-struct LandmarkErrorFunction
-{
-    template <typename T>
-    bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
-    {
-        Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
-
-        Eigen::Vector2<T> temp;
-        temp(0) = landmark[0] - pose[0];
-        temp(1) = landmark[1] - pose[1];
-
-        temp = rotation.transpose() * temp;
-
-        residual[0] = temp(0) - measurement[0];
-        residual[1] = temp(1) - measurement[1];
-
-        return true;
-    }
-};
-
-struct PoseErrorFunction
-{
-    template <typename T>
-    bool operator()(const T* const prev_pose, const T* const curr_pose, const T* const measurement, T* residual) const
-    {
-        Eigen::Matrix3<T> prev_pose_transformation = v2t(Eigen::Vector3<T>(prev_pose));
-        Eigen::Matrix3<T> curr_pose_transformation = v2t(Eigen::Vector3<T>(curr_pose));
-        Eigen::Matrix3<T> measurement_transformation = v2t(Eigen::Vector3<T>(measurement));
-        Eigen::Vector3<T> vec = t2v((curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation);
-
-        residual[0] = vec[0];
-        residual[1] = vec[1];
-        residual[2] = vec[2];
-
-        return true;
-    }
-};
 
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
 
 int main()
 {
-    /*
     try
     {
         PerceptionEnumerator l_enor("../data/input.txt");
 
         l_enor.first();
-        std::cout << l_enor.current();
-        
+        // std::cout << l_enor.current();
+
+        Graph graph(l_enor.current().m_pose);
+
+        int i = 1;
+
         while (!l_enor.end())
         {
             l_enor.next();
-            std::cout << l_enor.current();
+            // std::cout << l_enor.current();
+            // if (i == 10) break;
+            std::cout << i++ << std::endl;
+
+            graph.createPose(l_enor.current().m_pose);
         }
+
+        graph.optimize(true);
+
+        // std::cout << graph;
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
-    */
 
+/*
     std::vector<Eigen::Vector3<double>> init_pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
     std::vector<Eigen::Vector2<double>> init_landmark = {{1, -1}, {1.5, -1}, {2, -1}};
     std::vector<Eigen::Vector2<double>> init_landmark_measurements = {{1, -1}, {1, -1}, {1, -1}};
@@ -171,7 +108,7 @@ int main()
     Eigen::Vector3<double> vec = t2v<double>((curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation);
     std::cout << (curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation << std::endl << std::endl;
     std::cout << vec << std::endl << std::endl;
-
+*/
     return 0;
 }
 
