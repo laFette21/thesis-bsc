@@ -4,7 +4,15 @@
 #include <ceres/ceres.h>
 
 template <typename T>
-Eigen::Matrix2<T> RotationMatrix2D(T theta)
+inline T NormalizeAngle(const T& theta)
+{
+    const T two_pi(2.0 * M_PI);
+
+    return theta - two_pi * ceres::floor((theta + T(M_PI)) / two_pi);
+}
+
+template <typename T>
+Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
 {
     Eigen::Matrix2<T> result;
 
