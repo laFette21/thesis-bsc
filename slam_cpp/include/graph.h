@@ -12,7 +12,8 @@ class Graph
 {
     static int m_last_id;
     ceres::Problem m_problem;
-    std::map<int, Pose> m_poses;
+    ceres::CostFunction* m_pose_cost_function;
+    std::map<int, std::shared_ptr<Pose>> m_poses;
     std::vector<std::shared_ptr<Pose>> m_pose_measurements;
 
 public:
