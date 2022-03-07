@@ -32,14 +32,10 @@ void PerceptionEnumerator::next()
 
     if (!m_ss.fail())
     {
-        double l_x, l_y, l_psi;
         std::vector<Landmark> l_landmarks;
         Pose l_pose;
 
-        m_ss >> l_x >> l_y >> l_psi;
-        l_pose.m_x = l_x;
-        l_pose.m_y = l_y;
-        l_pose.m_psi = l_psi;
+        m_ss >> l_pose.m_data[0] >> l_pose.m_data[1] >> l_pose.m_data[2];
 
         m_end = !read_next_not_empty_line();
         m_ss >> l_type;

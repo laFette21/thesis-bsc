@@ -7,18 +7,15 @@
 
 struct Pose
 {
-    double m_x;
-    double m_y;
-    double m_psi;
+    double m_data[3];
 
-    Pose(double x = 0, double y = 0, double psi = 0): m_x(x), m_y(y), m_psi(psi) {}
-    // Eigen::Vector3d getAsVector3d() const { return Eigen::Vector3d(m_x, m_y, m_psi); }
+    Pose(double x = 0, double y = 0, double psi = 0): m_data{x, y, psi} {}
 
-    Pose operator+(const Pose& obj) { return Pose(m_x + obj.m_x, m_y + obj.m_y, m_psi + obj.m_psi); }
+    Pose operator+(const Pose& obj) { return Pose(m_data[0] + obj.m_data[0], m_data[1] + obj.m_data[1], m_data[2] + obj.m_data[2]); }
     friend std::ostream& operator<<(std::ostream& os, const Pose& pose)
     {
         os << std::setprecision(16);
-        os << pose.m_x << ' ' << pose.m_y << ' ' << pose.m_psi;
+        os << pose.m_data[0] << ' ' << pose.m_data[1] << ' ' << pose.m_data[2];
 
         return os;
     }
@@ -33,7 +30,6 @@ struct Landmark
 
     Landmark(int id = -1, double distance = 0, double bearing = 0, int color = 0):
         m_id(id), m_distance(distance), m_bearing(bearing), m_color(color) {}
-    // Eigen::Vector2d getAsVector2d() const { return Eigen::Vector2d(m_distance, m_bearing); }
 
     friend std::ostream& operator<<(std::ostream& os, const Landmark& lm)
     {

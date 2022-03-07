@@ -30,12 +30,14 @@ int main()
             // if (i == 10) break;
             std::cout << i++ << std::endl;
 
-            graph.createPose(l_enor.current().m_pose);
+            std::shared_ptr<Pose> ptr(new Pose(l_enor.current().m_pose));
+
+            graph.createPose(ptr);
         }
 
         graph.optimize(true);
 
-        // std::cout << graph;
+        std::cout << graph;
     }
     catch (const std::exception& e)
     {

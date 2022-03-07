@@ -63,14 +63,11 @@ struct LandmarkErrorFunction
 struct PoseErrorFunction
 {
     template <typename T>
-    bool operator()(const T* const prev_x, const T* const prev_y, const T* const prev_psi,
-                    const T* const curr_x, const T* const curr_y, const T* const curr_psi,
-                    const T* const meas_x, const T* const meas_y, const T* const meas_psi,
-                    T* residual) const
+    bool operator()(const T* const prev, const T* const curr, const T* const meas, T* residual) const
     {
-        Eigen::Matrix3<T> prev_pose_trans = v2t<T>(Eigen::Vector3<T>(*prev_x, *prev_y, *prev_psi));
-        Eigen::Matrix3<T> curr_pose_trans = v2t<T>(Eigen::Vector3<T>(*curr_x, *curr_y, *curr_psi));
-        Eigen::Matrix3<T> measurement_trans = v2t<T>(Eigen::Vector3<T>(*meas_x, *meas_y, *meas_psi));
+        Eigen::Matrix3<T> prev_pose_trans = v2t<T>(Eigen::Vector3<T>(prev[0], prev[1], prev[2]));
+        Eigen::Matrix3<T> curr_pose_trans = v2t<T>(Eigen::Vector3<T>(curr[0], curr[1], curr[2]));
+        Eigen::Matrix3<T> measurement_trans = v2t<T>(Eigen::Vector3<T>(meas[0], meas[1], meas[2]));
         Eigen::Vector3<T> vec = t2v<T>((curr_pose_trans.inverse() * prev_pose_trans) * measurement_trans);
 
         residual[0] = vec[0];
