@@ -12,7 +12,7 @@ void Graph::createPose(const std::shared_ptr<Pose>& measurement)
 {
     std::map<int, std::shared_ptr<Pose>>::iterator prev = std::prev(m_poses.end());
 
-    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(*prev->second + *measurement));
+    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(*prev->second * *measurement));
     m_pose_measurements.push_back(measurement);
 
     std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
