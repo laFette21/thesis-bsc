@@ -14,25 +14,25 @@ int main()
 {
     try
     {
-        PerceptionEnumerator l_enor("../data/input.txt");
-
-        l_enor.first();
-        // std::cout << l_enor.current();
-
-        Graph graph(l_enor.current().m_pose);
-
+        Graph graph;
+        PerceptionEnumerator enor("../data/input.txt");
         int i = 1;
 
-        while (!l_enor.end())
-        {
-            l_enor.next();
-            // std::cout << l_enor.current();
-            // if (i == 10) break;
-            std::cout << i++ << std::endl;
+        enor.first();
+        // std::cout << l_enor.current();
 
-            std::shared_ptr<Pose> ptr(new Pose(l_enor.current().m_pose));
+        while (!enor.end())
+        {
+            // if (i == 1000) break;
+            // std::cout << enor.current();
+
+            std::shared_ptr<Odometry> ptr(new Odometry(enor.current().odometry));
 
             graph.createPose(ptr);
+
+            i++;
+
+            enor.next();
         }
 
         graph.optimize(true);
