@@ -73,14 +73,14 @@ struct PoseErrorFunction
     template <typename T>
     bool operator()(const T* const prev, const T* const curr, const T* const meas, T* residual) const
     {
-        Eigen::Matrix3<T> prev_pose_trans = v2t<T>(Eigen::Vector3<T>(prev[0], prev[1], prev[2]));
-        Eigen::Matrix3<T> curr_pose_trans = v2t<T>(Eigen::Vector3<T>(curr[0], curr[1], curr[2]));
-        Eigen::Matrix3<T> measurement_trans = v2t<T>(Eigen::Vector3<T>(meas[0], meas[1], meas[2]));
-        Eigen::Vector3<T> vec = t2v<T>((curr_pose_trans.inverse() * prev_pose_trans) * measurement_trans);
+        double ts = 0.05; // 50 ms
+        T meas_x_global = meas[0] * ts * ceres::cos(prev[2] + meas[1] * ts / 2.0);
+        T meas_y_global = meas[0] * ts * ceres::sin(prev[2] + meas[1] * ts / 2.0);
+        T meas_psi_global = meas[1] * ts;
 
-        residual[0] = vec[0];
-        residual[1] = vec[1];
-        residual[2] = vec[2];
+        residual[0] = curr[0] - prev[0] - meas_x_global;
+        residual[1] = curr[1] - prev[1] - meas_y_global;
+        residual[2] = curr[2] - prev[2] - meas_psi_global;
 
         return true;
     }
