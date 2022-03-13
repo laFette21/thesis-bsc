@@ -10,16 +10,16 @@
 
 class Graph
 {
-    static int m_last_id;
     ceres::Problem m_problem;
     ceres::CostFunction* m_pose_cost_function;
     std::map<int, std::shared_ptr<Pose>> m_poses;
-    std::vector<std::shared_ptr<Pose>> m_pose_measurements;
+    std::vector<std::shared_ptr<Odometry>> m_pose_measurements;
+    static int m_last_id;
 
 public:
-    Graph(const Pose&);
+    Graph();
 
-    void createPose(const std::shared_ptr<Pose>&);
+    void createPose(const std::shared_ptr<Odometry>&);
     // void addLandmark(const Pose&, const Landmark&);
     bool optimize(bool = false);
 

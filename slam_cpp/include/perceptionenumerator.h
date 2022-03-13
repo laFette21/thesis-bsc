@@ -11,11 +11,12 @@
 
 struct Perception
 {
-    std::vector<Landmark> m_landmarks;
-    Pose m_pose;
+    Odometry odometry;
+    std::vector<Landmark> landmarks;
 
     Perception() {}
-    Perception(const Pose& pose, const std::vector<Landmark>& landmarks): m_pose(pose), m_landmarks(landmarks) {}
+    Perception(const Odometry& odometry, const std::vector<Landmark>& landmarks):
+        odometry(odometry), landmarks(landmarks) {}
 
     friend std::ostream& operator<<(std::ostream&, const Perception&);
 };
