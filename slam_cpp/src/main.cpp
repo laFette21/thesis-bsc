@@ -50,6 +50,19 @@ int main()
         graph.optimize(true);
 
         std::cout << graph;
+
+        auto all_lms = graph.getLandmarks();
+
+        for (auto& lms : all_lms)
+        {
+            for (auto& lm : lms.second)
+            {
+                if (lm->id == 247)
+                {
+                    std::cerr << *lm << std::endl;
+                }
+            }
+        }
     }
     catch (const std::exception& e)
     {

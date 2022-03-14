@@ -54,17 +54,17 @@ struct LandmarkErrorFunction
     bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
     {
         Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
-        T lm_x = pose[0] + landmark[0] * ceres::cos(landmark[1] + pose[2]);
-        T lm_y = pose[1] + landmark[0] * ceres::sin(landmark[1] + pose[2]);
+        T lm_meas_x = measurement[0] * ceres::cos(measurement[1] + pose[2]);
+        T lm_meas_y = measurement[0] * ceres::sin(measurement[1] + pose[2]);
 
         Eigen::Vector2<T> temp;
-        temp(0) = lm_x - pose[0];
-        temp(1) = lm_y - pose[1];
+        temp(0) = landmark[0] - pose[0];
+        temp(1) = landmark[1] - pose[1];
 
         temp = rotation.transpose() * temp;
 
-        residual[0] = temp(0) - (lm_x - pose[0]);
-        residual[1] = temp(1) - (lm_y - pose[1]);
+        residual[0] = temp(0) - lm_meas_x;
+        residual[1] = temp(1) - lm_meas_y;
 
         return true;
     }

@@ -26,6 +26,8 @@ public:
     void createPose(const std::shared_ptr<Odometry>&);
     bool optimize(bool = false);
 
+    std::map<int, std::vector<std::shared_ptr<Landmark>>> getLandmarks() const { return m_landmarks; }
+
     friend std::ostream& operator<<(std::ostream&, const Graph&);
 };
 
