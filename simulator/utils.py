@@ -105,6 +105,6 @@ def write_data_to_file(filename, cones, poses, odometry, noisy):
                 for c in cones_in_range:
                     distance = c[1]  # normal(c[1], DISTANCE_NOISE ** 2) if noisy else c[1]
                     orientation = c[2]  # normal(c[2], BEARING_NOISE ** 2) if noisy else c[2]
-                    print('p', timestamp / 1000.0, distance, orientation * 180 / pi, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
+                    print('p', timestamp / 1000.0, distance, orientation, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
 
             timestamp += ODOMETRY_SAMPLING
