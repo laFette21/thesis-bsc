@@ -1,38 +1,38 @@
-#include "../include/perceptionenumerator.h"
+#include "../include/dataenumerator.h"
 
 
-std::ostream& operator<<(std::ostream& os, const Perception& obj)
+std::ostream& operator<<(std::ostream& os, const Data& obj)
 {
     os << std::setprecision(16);
     os << "odometry: " << obj.odometry << std::endl;
 
-    for (size_t i = 0; i < obj.landmarks.size(); ++i)
-        os << "lm: " << obj.landmarks[i] << std::endl; 
+    for (size_t i = 0; i < obj.perceptions.size(); ++i)
+        os << "lm: " << obj.perceptions[i] << std::endl; 
 
     return os;
 }
 
-PerceptionEnumerator::PerceptionEnumerator(const std::string& str)
+DataEnumerator::DataEnumerator(const std::string& str)
 {
     m_file.open(str);
     if(m_file.fail()) throw std::runtime_error("OPEN ERROR");
     m_end = false;
 }
 
-void PerceptionEnumerator::first()
+void DataEnumerator::first()
 {
     m_end = !read_next_not_empty_line();
     next();
 }
 
-void PerceptionEnumerator::next()
+void DataEnumerator::next()
 {
     char type;
     m_ss >> type;
 
     if (!m_ss.fail())
     {
-        std::vector<Landmark> landmarks;
+        std::vector<Perception> perceptions;
         Odometry odometry;
         double vel = 0, ang_vel = 0, count = 0;
         double trash;
@@ -54,10 +54,10 @@ void PerceptionEnumerator::next()
 
         while (!m_end && type == 'p')
         {
-            Landmark landmark;
+            Perception perception;
 
-            m_ss >> trash >> landmark.distance >> landmark.bearing >> landmark.color >> landmark.id;
-            landmarks.push_back(landmark);
+            m_ss >> trash >> perception.data[0] >> perception.data[1] >> perception.color >> perception.id;
+            perceptions.push_back(perception);
 
             m_end = !read_next_not_empty_line();
             m_ss >> type;
@@ -69,11 +69,11 @@ void PerceptionEnumerator::next()
         m_ss = std::move(temp);
 
         m_data.odometry = odometry;
-        m_data.landmarks = landmarks;
+        m_data.perceptions = perceptions;
     }
 }
 
-bool PerceptionEnumerator::read_next_not_empty_line()
+bool DataEnumerator::read_next_not_empty_line()
 {
     std::string line;
     m_ss.clear();
