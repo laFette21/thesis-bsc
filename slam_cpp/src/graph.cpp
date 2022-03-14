@@ -5,21 +5,36 @@ int Graph::m_last_id = 0;
 Graph::Graph()
 {
     m_pose_cost_function = new ceres::AutoDiffCostFunction<PoseErrorFunction, 3, 3, 3, 2>(new PoseErrorFunction);
+    m_landmark_cost_function = new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose());
+}
+
+void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Perception>>>& measurements)
+{
+    std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
+
+    for (auto& measurement : *measurements)
+    {
+        std::shared_ptr<Landmark> lm(new Landmark());
+
+        m_landmarks[m_last_id].push_back(lm);
+        m_landmark_measurements.push_back(measurements);
+
+        m_problem.AddResidualBlock(m_landmark_cost_function, nullptr, curr->second->data, lm->data, measurement->data);
+        m_problem.SetParameterBlockConstant(measurement->data);
+    }
 }
 
 void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 {
     std::map<int, std::shared_ptr<Pose>>::iterator prev = std::prev(m_poses.end());
 
-    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose());
+    m_prev_global_pose += *measurement;
+
+    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
     m_pose_measurements.push_back(measurement);
 
     std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
-
-    // std::cout << *prev->second << std::endl;
-    // std::cout << *meas << std::endl;
-    // std::cout << *curr->second << std::endl;
 
     m_problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, measurement->data);
     m_problem.SetParameterBlockConstant(measurement->data);
@@ -41,18 +56,16 @@ bool Graph::optimize(bool report)
     Solve(options, &m_problem, &summary);
 
     if (report)
-        std::cout << summary.FullReport() << std::endl;
+        std::cerr << summary.FullReport() << std::endl;
 
     return summary.IsSolutionUsable();
 }
 
 std::ostream& operator<<(std::ostream& os, const Graph& graph)
 {
-    std::map<int, std::shared_ptr<Pose>>::const_iterator it;
-
-    for (it = graph.m_poses.begin(); it != graph.m_poses.end(); ++it)
+    for (auto& pose : graph.m_poses)
     {
-        os << it->first << ' ' << *it->second << std::endl;
+        os << pose.first << ' ' << *pose.second << std::endl;
     }
 
     return os;

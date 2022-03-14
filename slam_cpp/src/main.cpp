@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 #include <ceres/ceres.h>
 
-#include "../include/perceptionenumerator.h"
+#include "../include/dataenumerator.h"
 #include "../include/graph.h"
 
 
@@ -12,10 +13,12 @@
 
 int main()
 {
+    auto start = std::chrono::steady_clock::now();
+
     try
     {
         Graph graph;
-        PerceptionEnumerator enor("../data/input.txt");
+        DataEnumerator enor("../data/input_noisy.txt");
         int i = 1;
 
         enor.first();
@@ -23,14 +26,23 @@ int main()
 
         while (!enor.end())
         {
-            // if (i == 1000) break;
+            // if (i == 100) break;
             // std::cout << enor.current();
 
-            std::shared_ptr<Odometry> ptr(new Odometry(enor.current().odometry));
+            std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
 
-            graph.createPose(ptr);
+            for (auto& perception : enor.current().perceptions)
+                perceptions->push_back(std::shared_ptr<Perception>(new Perception(perception)));
 
-            i++;
+            graph.createLandmark(perceptions);
+
+            std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
+            graph.createPose(odometry);
+
+            // if (i % 30 == 0)
+            //     graph.optimize(true);
+
+            std::cerr << i++ << std::endl;
 
             enor.next();
         }
@@ -43,6 +55,12 @@ int main()
     {
         std::cerr << e.what() << std::endl;
     }
+
+    auto end = std::chrono::steady_clock::now();
+
+    std::cerr << "Elapsed time in milliseconds: "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+        << " ms" << std::endl;
 
 /*
     std::vector<Eigen::Vector3<double>> init_pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
