@@ -15,6 +15,7 @@ class Graph
     std::map<int, std::shared_ptr<Pose>> m_poses;
     std::map<int, std::vector<std::shared_ptr<Landmark>>> m_landmarks;
     Pose m_prev_global_pose;
+    std::map<int, std::shared_ptr<Landmark>> m_first_global_landmarks;
     std::vector<std::shared_ptr<Odometry>> m_pose_measurements;
     std::vector<std::shared_ptr<std::vector<std::shared_ptr<Perception>>>> m_landmark_measurements;
     static int m_last_id;

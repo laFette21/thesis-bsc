@@ -17,6 +17,19 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
     {
         std::shared_ptr<Landmark> lm(new Landmark(measurement->id, 0, 0, measurement->color));
 
+        if (!m_first_global_landmarks.count(measurement->id))
+        {
+            lm->data[0] = m_prev_global_pose.data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + m_prev_global_pose.data[2]);
+            lm->data[1] = m_prev_global_pose.data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + m_prev_global_pose.data[2]);
+
+            m_first_global_landmarks[measurement->id] = lm;
+        }
+        else
+        {
+            lm->data[0] = m_first_global_landmarks[measurement->id]->data[0];
+            lm->data[1] = m_first_global_landmarks[measurement->id]->data[1];
+        }
+
         m_landmarks[m_last_id].push_back(lm);
         m_landmark_measurements.push_back(measurements);
 
@@ -45,7 +58,7 @@ bool Graph::optimize(bool report)
     ceres::Solver::Options options;
     ceres::Solver::Summary summary;
 
-    options.max_num_iterations = 400;
+    options.max_num_iterations = 200;
     options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
     // options.minimizer_progress_to_stdout = true;
 
