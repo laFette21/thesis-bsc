@@ -64,6 +64,15 @@ struct Pose
 
     Pose(double x = 0, double y = 0, double psi = 0): data{x, y, psi} {}
 
+    Pose& operator+=(Odometry& obj)
+    {
+        double ts = 0.05; // 50 ms
+        data[0] += obj.data[0] * ts * ceres::cos(data[2] + obj.data[1] * ts / 2.0);
+        data[1] += obj.data[0] * ts * ceres::sin(data[2] + obj.data[1] * ts / 2.0);
+        data[2] = NormalizeAngle(data[2] + obj.data[1] * ts);
+
+        return *this;
+    }
     friend std::ostream& operator<<(std::ostream& os, const Pose& obj)
     {
         os << std::setprecision(16);

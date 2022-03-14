@@ -23,7 +23,7 @@ Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
 
     return result;
 }
-
+/*
 template <typename T>
 Eigen::Vector3<T> t2v(const Eigen::Matrix3<T>& transformation)
 {
@@ -47,22 +47,24 @@ Eigen::Matrix3<T> v2t(const Eigen::Vector3<T>& vector)
 
     return result;
 }
-
+*/
 struct LandmarkErrorFunction
 {
     template <typename T>
     bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
     {
         Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
+        T lm_x = pose[0] + landmark[0] * ceres::cos(landmark[1] + pose[2]);
+        T lm_y = pose[1] + landmark[0] * ceres::sin(landmark[1] + pose[2]);
 
         Eigen::Vector2<T> temp;
-        temp(0) = landmark[0] - pose[0];
-        temp(1) = landmark[1] - pose[1];
+        temp(0) = lm_x - pose[0];
+        temp(1) = lm_y - pose[1];
 
         temp = rotation.transpose() * temp;
 
-        residual[0] = temp(0) - measurement[0];
-        residual[1] = temp(1) - measurement[1];
+        residual[0] = temp(0) - (lm_x - pose[0]);
+        residual[1] = temp(1) - (lm_y - pose[1]);
 
         return true;
     }
@@ -78,9 +80,9 @@ struct PoseErrorFunction
         T meas_y_global = meas[0] * ts * ceres::sin(prev[2] + meas[1] * ts / 2.0);
         T meas_psi_global = meas[1] * ts;
 
-        residual[0] = curr[0] - prev[0] - meas_x_global;
-        residual[1] = curr[1] - prev[1] - meas_y_global;
-        residual[2] = curr[2] - prev[2] - meas_psi_global;
+        residual[0] = (curr[0] - prev[0]) - meas_x_global;
+        residual[1] = (curr[1] - prev[1]) - meas_y_global;
+        residual[2] = NormalizeAngle((curr[2] - prev[2]) - meas_psi_global);
 
         return true;
     }

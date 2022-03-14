@@ -6,8 +6,8 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
     os << std::setprecision(16);
     os << "odometry: " << obj.odometry << std::endl;
 
-    for (size_t i = 0; i < obj.perceptions.size(); ++i)
-        os << "lm: " << obj.perceptions[i] << std::endl; 
+    for (auto& perception : obj.perceptions)
+        os << "lm: " << perception << std::endl; 
 
     return os;
 }
