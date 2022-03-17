@@ -42,6 +42,8 @@ void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 {
     std::map<int, std::shared_ptr<Pose>>::iterator prev = std::prev(m_poses.end());
 
+    m_prev_global_pose += *measurement;
+
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
     m_pose_measurements.push_back(measurement);
 
@@ -49,8 +51,6 @@ void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 
     m_problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, measurement->data);
     m_problem.SetParameterBlockConstant(measurement->data);
-
-    m_prev_global_pose += *measurement;
 }
 
 bool Graph::optimize(bool report)
@@ -58,7 +58,7 @@ bool Graph::optimize(bool report)
     ceres::Solver::Options options;
     ceres::Solver::Summary summary;
 
-    options.max_num_iterations = 200;
+    options.max_num_iterations = 500;
     options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
     // options.minimizer_progress_to_stdout = true;
 
