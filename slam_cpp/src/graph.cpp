@@ -49,6 +49,10 @@ void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 
     std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
 
+    // 50 ms timestamp
+    measurement->data[0] *= 0.05;
+    measurement->data[1] *= 0.05;
+
     m_problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, measurement->data);
     m_problem.SetParameterBlockConstant(measurement->data);
 }

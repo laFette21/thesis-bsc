@@ -75,14 +75,12 @@ struct PoseErrorFunction
     template <typename T>
     bool operator()(const T* const prev, const T* const curr, const T* const meas, T* residual) const
     {
-        double ts = 0.05; // 50 ms
-        T meas_x_global = meas[0] * ts * ceres::cos(prev[2] + meas[1] * ts * 0.5); // TODO: outsource the ts multiplication
-        T meas_y_global = meas[0] * ts * ceres::sin(prev[2] + meas[1] * ts * 0.5);
-        T meas_psi_global = meas[1] * ts;
+        T meas_x_global = meas[0] * ceres::cos(prev[2] + meas[1] * 0.5);
+        T meas_y_global = meas[0] * ceres::sin(prev[2] + meas[1] * 0.5);
 
         residual[0] = (curr[0] - prev[0]) - meas_x_global;
         residual[1] = (curr[1] - prev[1]) - meas_y_global;
-        residual[2] = NormalizeAngle((curr[2] - prev[2]) - meas_psi_global);
+        residual[2] = NormalizeAngle((curr[2] - prev[2]) - meas[1]);
 
         return true;
     }
