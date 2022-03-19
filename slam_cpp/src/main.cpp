@@ -45,8 +45,8 @@ int main(int argc, char const *argv[])
             std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
             graph.createPose(odometry);
 
-            // if (i % 30 == 0)
-            //     graph.optimize(true);
+            // if (i % (5 / TIMESTAMP) == 0)
+            //     graph.optimize(5 / TIMESTAMP, true);
 
             std::cerr << i++ << std::endl;
 
@@ -56,18 +56,16 @@ int main(int argc, char const *argv[])
         graph.optimize(true);
 
         std::cout << graph;
+        std::cout << "###" << std::endl;
 
-        auto all_lms = graph.getLandmarks();
+        auto lms = graph.getUniqueLandmarks();
 
-        for (const auto& lms : all_lms)
+        for (const auto& lm : lms)
         {
-            for (const auto& lm : lms.second)
-            {
-                if (lm->id == 247)
-                {
-                    std::cerr << *lm << std::endl;
-                }
-            }
+            // if (lm->id == 247)
+            // {
+                std::cout << *lm.second << std::endl;
+            // }
         }
     }
     catch (const std::exception& e)

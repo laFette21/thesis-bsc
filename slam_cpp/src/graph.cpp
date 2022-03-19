@@ -17,18 +17,18 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
     {
         std::shared_ptr<Landmark> lm;
 
-        if (!m_first_global_landmarks.count(measurement->id))
+        if (!m_unique_landmarks.count(measurement->id))
         {
             lm = std::shared_ptr<Landmark>(new Landmark(measurement->id, 0, 0, measurement->color));
 
             lm->data[0] = m_prev_global_pose.data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + m_prev_global_pose.data[2]);
             lm->data[1] = m_prev_global_pose.data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + m_prev_global_pose.data[2]);
 
-            m_first_global_landmarks[measurement->id] = lm;
+            m_unique_landmarks[measurement->id] = lm;
         }
         else
         {
-            lm = m_first_global_landmarks[measurement->id];
+            lm = m_unique_landmarks[measurement->id];
 
             // lm->data[0] = m_first_global_landmarks[measurement->id]->data[0];
             // lm->data[1] = m_first_global_landmarks[measurement->id]->data[1];
