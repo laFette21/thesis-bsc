@@ -15,10 +15,12 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
 
     for (auto& measurement : *measurements)
     {
-        std::shared_ptr<Landmark> lm(new Landmark(measurement->id, 0, 0, measurement->color));
+        std::shared_ptr<Landmark> lm;
 
         if (!m_first_global_landmarks.count(measurement->id))
         {
+            lm = std::shared_ptr<Landmark>(new Landmark(measurement->id, 0, 0, measurement->color));
+
             lm->data[0] = m_prev_global_pose.data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + m_prev_global_pose.data[2]);
             lm->data[1] = m_prev_global_pose.data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + m_prev_global_pose.data[2]);
 
@@ -26,8 +28,10 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
         }
         else
         {
-            lm->data[0] = m_first_global_landmarks[measurement->id]->data[0];
-            lm->data[1] = m_first_global_landmarks[measurement->id]->data[1];
+            lm = m_first_global_landmarks[measurement->id];
+
+            // lm->data[0] = m_first_global_landmarks[measurement->id]->data[0];
+            // lm->data[1] = m_first_global_landmarks[measurement->id]->data[1];
         }
 
         m_landmarks[m_last_id].push_back(lm);
@@ -49,9 +53,8 @@ void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 
     std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
 
-    // 50 ms timestamp
-    measurement->data[0] *= 0.05;
-    measurement->data[1] *= 0.05;
+    measurement->data[0] *= TIMESTAMP;
+    measurement->data[1] *= TIMESTAMP;
 
     m_problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, measurement->data);
     m_problem.SetParameterBlockConstant(measurement->data);

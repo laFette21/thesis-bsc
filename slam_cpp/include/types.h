@@ -7,6 +7,7 @@
 
 #include "utils.h"
 
+#define TIMESTAMP 0.05 // 50 ms
 
 struct Landmark
 {
@@ -66,10 +67,9 @@ struct Pose
 
     Pose& operator+=(Odometry& obj)
     {
-        double ts = 0.05; // 50 ms
-        data[0] += obj.data[0] * ts * ceres::cos(data[2] + obj.data[1] * ts / 2.0);
-        data[1] += obj.data[0] * ts * ceres::sin(data[2] + obj.data[1] * ts / 2.0);
-        data[2] = NormalizeAngle(data[2] + obj.data[1] * ts);
+        data[0] += obj.data[0] * TIMESTAMP * ceres::cos(data[2] + obj.data[1] * TIMESTAMP * 0.5);
+        data[1] += obj.data[0] * TIMESTAMP * ceres::sin(data[2] + obj.data[1] * TIMESTAMP * 0.5);
+        data[2] = NormalizeAngle(data[2] + obj.data[1] * TIMESTAMP);
 
         return *this;
     }

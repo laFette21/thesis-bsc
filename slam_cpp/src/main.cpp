@@ -7,32 +7,38 @@
 #include "../include/dataenumerator.h"
 #include "../include/graph.h"
 
-
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
 
-int main()
+int main(int argc, char const *argv[])
 {
     auto start = std::chrono::steady_clock::now();
+
+    if (argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <path/to/file>" << std::endl;
+        return 1;
+    }
 
     try
     {
         Graph graph;
-        DataEnumerator enor("../data/input_noisy.txt");
+        DataEnumerator enor(argv[1]);
         int i = 1;
 
         enor.first();
-        // std::cout << l_enor.current();
+
+        auto is_id = [](std::shared_ptr<Perception> obj){ return obj->id == 247; };
 
         while (!enor.end())
         {
-            // if (i == 100) break;
-            // std::cout << enor.current();
-
             std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
 
             for (auto& perception : enor.current().perceptions)
                 perceptions->push_back(std::shared_ptr<Perception>(new Perception(perception)));
+
+            // if (std::find_if(perceptions->begin(), perceptions->end(), is_id) == perceptions->end())
+            //     break;
 
             graph.createLandmark(perceptions);
 
@@ -53,9 +59,9 @@ int main()
 
         auto all_lms = graph.getLandmarks();
 
-        for (auto& lms : all_lms)
+        for (const auto& lms : all_lms)
         {
-            for (auto& lm : lms.second)
+            for (const auto& lm : lms.second)
             {
                 if (lm->id == 247)
                 {
@@ -75,73 +81,6 @@ int main()
         << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
         << " ms" << std::endl;
 
-/*
-    std::vector<Eigen::Vector3<double>> init_pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
-    std::vector<Eigen::Vector2<double>> init_landmark = {{1, -1}, {1.5, -1}, {2, -1}};
-    std::vector<Eigen::Vector2<double>> init_landmark_measurements = {{1, -1}, {1, -1}, {1, -1}};
-
-    std::vector<Eigen::Vector3<double>> pose = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}};
-    std::vector<Eigen::Vector2<double>> landmark = {{1, -1}, {1.5, -1}, {2, -1}};
-    std::vector<Eigen::Vector2<double>> landmark_measurements = {{1, -1}, {1, -1}, {1, -1}};
-
-    // double init_pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
-    // double init_landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
-    // double init_landmark_measurements[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
-
-    // double pose[][3] = {{0, 0, 0}, {0.5, 0, 0}, {1, 0, 0}, {1.5, 0, 0}, {2, 0, 0}, {2.5, 0, 0}, {3, 0, 0}, {3.5, 0, 0}, {4, 0, 0}, {4.5, 0, 0}};
-    // double landmark[][2] = {{10, -1}, {10.1, -1}, {10.2, -1}, {10.3, -1}, {10.4, -1}, {10.5, -1}, {10.6, -1}, {10.7, -1}, {10.8, -1}, {10.9, -1}};
-    // double landmark_measurements[][2] = {{10, 1}, {10.1, 1}, {10.2, 1}, {10.3, 1}, {10.4, 1}, {10.5, 1}, {10.6, 1}, {10.7, 1}, {10.8, 1}, {10.9, 1}};
-
-    // TODO: LOOP for processing perception
-        // TODO: LOOP for all the cones visible from the current pose
-        // TODO: Solve the problem
-        // TODO: REPEAT
-
-    // Build the problem.
-    ceres::Problem problem;
-
-    // Set up the only cost function (also known as residual). This uses
-    // auto-differentiation to obtain the derivative (jacobian).
-    ceres::CostFunction* cost_function =
-        new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
-
-    for (size_t i = 0; i < pose.size(); ++i)
-    {
-        for (size_t j = 0; j < landmark.size(); ++j)
-        {
-            problem.AddResidualBlock(cost_function, nullptr, pose[i].data(), landmark[j].data(), landmark_measurements[i].data());
-            problem.SetParameterBlockConstant(landmark_measurements[i].data());
-        }
-    }
-
-    problem.SetParameterBlockConstant(pose[0].data());
-
-    // Run the solver!
-    ceres::Solver::Options options;
-    options.linear_solver_type = ceres::DENSE_QR;
-    options.minimizer_progress_to_stdout = true;
-    ceres::Solver::Summary summary;
-    Solve(options, &problem, &summary);
-
-    std::cout << summary.FullReport() << std::endl;
-
-    for (size_t i = 0; i < pose.size(); ++i)
-    {
-        std::cout << i + 1 << ". p: " << init_pose[i][0] << " " << init_pose[i][1] << " " << init_pose[i][2] << " -> " << pose[i][0] << " " << pose[i][1] << " " << pose[i][2] << std::endl;
-        std::cout << i + 1 <<  ". lm: " << init_landmark[i][0] << " " << init_landmark[i][1] << " -> " << landmark[i][0] << " " << landmark[i][1] << std::endl;
-        std::cout << i + 1 <<  ". meas: " << init_landmark_measurements[i][0] << " " << init_landmark_measurements[i][1] << " -> " << landmark_measurements[i][0] << " " << landmark_measurements[i][1] << std::endl;
-    }
-
-    Eigen::Matrix3<double> prev_pose_transformation = v2t(Eigen::Vector3<double>(0, 0, 0));
-    std::cout << prev_pose_transformation << std::endl << std::endl;
-    Eigen::Matrix3<double> curr_pose_transformation = v2t(Eigen::Vector3<double>(1, 1, 1));
-    std::cout << curr_pose_transformation << std::endl << std::endl;
-    Eigen::Matrix3<double> measurement_transformation = v2t(Eigen::Vector3<double>(1, 1, 1));
-    std::cout << measurement_transformation << std::endl << std::endl;
-    Eigen::Vector3<double> vec = t2v<double>((curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation);
-    std::cout << (curr_pose_transformation.inverse() * prev_pose_transformation) * measurement_transformation << std::endl << std::endl;
-    std::cout << vec << std::endl << std::endl;
-*/
     return 0;
 }
 
