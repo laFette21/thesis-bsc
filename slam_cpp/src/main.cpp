@@ -45,15 +45,16 @@ int main(int argc, char const *argv[])
             std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
             graph.createPose(odometry);
 
-            // if (i % (5 / TIMESTAMP) == 0)
-            //     graph.optimize(5 / TIMESTAMP, true);
+            if (i % (int)(5 / TIMESTAMP) == 0)
+                graph.optimize((5 / TIMESTAMP) + 1, true);
 
-            std::cerr << i++ << std::endl;
+            std::cerr << i << std::endl;
 
+            i++;
             enor.next();
         }
 
-        graph.optimize(true);
+        graph.optimize(2001, true);
 
         std::cout << graph;
         std::cout << "###" << std::endl;
@@ -87,7 +88,6 @@ int main(int argc, char const *argv[])
 #define CATCH_CONFIG_MAIN
 #include "../include/catch.hpp"
 
-
 TEST_CASE("Test RotationMatrix2D", "[utility]")
 {
     SECTION("Identity matrix with theta = 0")
@@ -105,44 +105,6 @@ TEST_CASE("Test RotationMatrix2D", "[utility]")
         matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
 
         REQUIRE(matrix == RotationMatrix2D<double>(1));
-    }
-}
-
-TEST_CASE("Test t2v", "[utility]")
-{
-    SECTION("Vector of zeros with identity matrix")
-    {
-        REQUIRE(Eigen::Vector3d::Zero() == t2v<double>(Eigen::Matrix3d::Identity()));
-    }
-
-    SECTION("Vector of ones with transformation matrix")
-    {
-        Eigen::Matrix3d matrix = Eigen::Matrix3d::Zero();
-
-        matrix.topLeftCorner(2, 2) = RotationMatrix2D<double>(1);
-        matrix.topRightCorner(2, 1) = Eigen::Vector2<double>::Ones();
-        matrix(2, 2) = 1;
-
-        REQUIRE(Eigen::Vector3d::Ones() == t2v<double>(matrix));
-    }
-}
-
-TEST_CASE("Test v2t", "[utility]")
-{
-    SECTION("Identity matrix with vector of zeros")
-    {
-        REQUIRE(Eigen::Matrix3d::Identity() == v2t<double>(Eigen::Vector3d::Zero()));
-    }
-
-    SECTION("Transformation matrix with vector of ones")
-    {
-        Eigen::Matrix3d matrix = Eigen::Matrix3d::Zero();
-
-        matrix.topLeftCorner(2, 2) = RotationMatrix2D<double>(1);
-        matrix.topRightCorner(2, 1) = Eigen::Vector2<double>::Ones();
-        matrix(2, 2) = 1;
-
-        REQUIRE(matrix == v2t<double>(Eigen::Vector3d::Ones()));
     }
 }
 

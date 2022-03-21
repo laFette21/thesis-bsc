@@ -23,38 +23,14 @@ Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
 
     return result;
 }
-/*
-template <typename T>
-Eigen::Vector3<T> t2v(const Eigen::Matrix3<T>& transformation)
-{
-    Eigen::Vector3<T> result;
 
-    result[0] = transformation(0, 2);
-    result[1] = transformation(1, 2);
-    result[2] = ceres::atan2(transformation(1, 0), transformation(0, 0));
-
-    return result;
-}
-
-template <typename T>
-Eigen::Matrix3<T> v2t(const Eigen::Vector3<T>& vector)
-{
-    Eigen::Matrix3<T> result = Eigen::Matrix3<T>::Zero();
-
-    result.template topLeftCorner<2, 2>() = RotationMatrix2D<T>(vector[2]);
-    result.template topRightCorner<2, 1>() = vector.template head<2>();
-    result(2, 2) = T(1);
-
-    return result;
-}
-*/
 struct LandmarkErrorFunction
 {
     template <typename T>
     bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
     {
         Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
-        T lm_meas_x = measurement[0] * ceres::cos(measurement[1] + pose[2]); // TODO: - pose[2] -> {lm_meas_x, lm_meas_y} * rotation
+        T lm_meas_x = measurement[0] * ceres::cos(measurement[1] + pose[2]);
         T lm_meas_y = measurement[0] * ceres::sin(measurement[1] + pose[2]);
 
         Eigen::Vector2<T> temp;

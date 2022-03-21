@@ -4,9 +4,9 @@ int Graph::m_last_id = 0;
 
 Graph::Graph()
 {
-    m_pose_cost_function = new ceres::AutoDiffCostFunction<PoseErrorFunction, 3, 3, 3, 2>(new PoseErrorFunction);
-    m_landmark_cost_function = new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
-    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose());
+    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose);
+    m_options.max_num_iterations = 500;
+    m_options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
 }
 
 void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Perception>>>& measurements)
@@ -29,51 +29,62 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
         else
         {
             lm = m_unique_landmarks[measurement->id];
-
-            // lm->data[0] = m_first_global_landmarks[measurement->id]->data[0];
-            // lm->data[1] = m_first_global_landmarks[measurement->id]->data[1];
         }
 
         m_landmarks[m_last_id].push_back(lm);
-        m_landmark_measurements.push_back(measurements);
-
-        m_problem.AddResidualBlock(m_landmark_cost_function, nullptr, curr->second->data, lm->data, measurement->data);
-        m_problem.SetParameterBlockConstant(measurement->data);
     }
+
+    m_landmark_measurements[m_last_id] = measurements;
 }
 
 void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
 {
-    std::map<int, std::shared_ptr<Pose>>::iterator prev = std::prev(m_poses.end());
-
     m_prev_global_pose += *measurement;
-
-    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
-    m_pose_measurements.push_back(measurement);
-
-    std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
 
     measurement->data[0] *= TIMESTAMP;
     measurement->data[1] *= TIMESTAMP;
+    m_pose_measurements[m_last_id] = measurement;
 
-    m_problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, measurement->data);
-    m_problem.SetParameterBlockConstant(measurement->data);
+    m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
 }
 
-bool Graph::optimize(bool report)
+bool Graph::optimize(int quantity, bool report)
 {
-    ceres::Solver::Options options;
+    ceres::Problem problem;
     ceres::Solver::Summary summary;
 
-    options.max_num_iterations = 500;
-    options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
-    // options.minimizer_progress_to_stdout = true;
+    m_pose_cost_function = new ceres::AutoDiffCostFunction<PoseErrorFunction, 3, 3, 3, 2>(new PoseErrorFunction);
+    m_landmark_cost_function = new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
 
-    std::map<int, std::shared_ptr<Pose>>::iterator start = m_poses.begin();
+    auto start = std::prev(m_poses.end(), quantity);
+    auto prev = start;
+    auto curr = std::next(prev);
 
-    m_problem.SetParameterBlockConstant(start->second->data);
+    while (curr != m_poses.end())
+    {
+        problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, m_pose_measurements[curr->first]->data);
+        problem.SetParameterBlockConstant(m_pose_measurements[curr->first]->data);
 
-    Solve(options, &m_problem, &summary);
+        auto measurements = *m_landmark_measurements[curr->first];
+
+        // TODO: optimize performance
+        for (auto& lm : m_landmarks[curr->first])
+        {
+            auto is_id = [lm](std::shared_ptr<Perception> obj){ return obj->id == lm->id; };
+            auto meas = std::find_if(measurements.begin(), measurements.end(), is_id);
+
+            problem.AddResidualBlock(m_landmark_cost_function, nullptr, prev->second->data, lm->data, meas->get()->data);
+            problem.SetParameterBlockConstant(meas->get()->data);
+        }
+
+        prev++;
+        curr++;
+    }
+
+    // Set anchor for first pose
+    problem.SetParameterBlockConstant(start->second->data);
+
+    Solve(m_options, &problem, &summary);
 
     if (report)
         std::cerr << summary.FullReport() << std::endl;
