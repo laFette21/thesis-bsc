@@ -56,7 +56,8 @@ void DataEnumerator::next()
         {
             Perception perception;
 
-            m_ss >> trash >> perception.data[0] >> perception.data[1] >> perception.color >> perception.id;
+            m_ss >> trash >> perception.data[0] >> perception.data[1] >> perception.color
+                >> perception.id >> perception.ground_truth[0] >> perception.ground_truth[1];
             perceptions.push_back(perception);
 
             m_end = !read_next_not_empty_line();

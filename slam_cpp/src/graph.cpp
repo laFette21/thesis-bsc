@@ -19,7 +19,9 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
 
         if (!m_unique_landmarks.count(measurement->id))
         {
-            lm = std::shared_ptr<Landmark>(new Landmark(measurement->id, 0, 0, measurement->color));
+            lm = std::shared_ptr<Landmark>(
+                new Landmark(measurement->id, 0, 0, measurement->color, measurement->ground_truth[0], measurement->ground_truth[1])
+            );
 
             lm->data[0] = m_prev_global_pose.data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + m_prev_global_pose.data[2]);
             lm->data[1] = m_prev_global_pose.data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + m_prev_global_pose.data[2]);
@@ -67,7 +69,7 @@ bool Graph::optimize(int quantity, bool report)
 
         auto measurements = *m_landmark_measurements[curr->first];
 
-        // TODO: optimize performance
+        // TODO: optimize performance?
         for (auto& lm : m_landmarks[curr->first])
         {
             auto is_id = [lm](std::shared_ptr<Perception> obj){ return obj->id == lm->id; };

@@ -12,15 +12,18 @@
 struct Landmark
 {
     double data[2];
+    double ground_truth[2];
     int color;
     int id;
 
-    Landmark(int id = -1, double x = 0, double y = 0, int color = 0): id(id), data{x, y}, color(color) {}
+    Landmark(int id = -1, double x = 0, double y = 0, int color = 0, double glob_x = 0, double glob_y = 0):
+        id(id), data{x, y}, color(color), ground_truth{glob_x, glob_y} {}
 
     friend std::ostream& operator<<(std::ostream& os, const Landmark& obj)
     {
         os << std::setprecision(16);
-        os << obj.id << ' ' << obj.data[0] << ' ' << obj.data[1] << ' ' << obj.color;
+        os << obj.id << ' ' << obj.data[0] << ' ' << obj.data[1] << ' '
+            << obj.color << ' ' << obj.ground_truth[0] << ' ' << obj.ground_truth[1];
 
         return os;
     }
@@ -44,16 +47,18 @@ struct Odometry
 struct Perception
 {
     double data[2];
+    double ground_truth[2];
     int color;
     int id;
 
-    Perception(int id = -1, double distance = 0, double bearing = 0, int color = 0):
-        id(id), data{distance, bearing}, color(color) {}
+    Perception(int id = -1, double distance = 0, double bearing = 0, int color = 0, double glob_x = 0, double glob_y = 0):
+        id(id), data{distance, bearing}, color(color), ground_truth{glob_x, glob_y} {}
 
     friend std::ostream& operator<<(std::ostream& os, const Perception& obj)
     {
         os << std::setprecision(16);
-        os << obj.id << ' ' << obj.data[0] << ' ' << obj.data[1] << ' ' << obj.color;
+        os << obj.id << ' ' << obj.data[0] << ' ' << obj.data[1] << ' '
+            << obj.color << ' ' << obj.ground_truth[0] << ' ' << obj.ground_truth[1];
 
         return os;
     }
