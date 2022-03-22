@@ -10,6 +10,8 @@
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
 
+static constexpr int section = (int)(5 / TIMESTAMP);
+
 int main(int argc, char const *argv[])
 {
     auto start = std::chrono::steady_clock::now();
@@ -22,13 +24,11 @@ int main(int argc, char const *argv[])
 
     try
     {
-        Graph graph;
         DataEnumerator enor(argv[1]);
+        Graph graph;
         int i = 1;
 
         enor.first();
-
-        auto is_id = [](std::shared_ptr<Perception> obj){ return obj->id == 247; };
 
         while (!enor.end())
         {
@@ -37,16 +37,13 @@ int main(int argc, char const *argv[])
             for (auto& perception : enor.current().perceptions)
                 perceptions->push_back(std::shared_ptr<Perception>(new Perception(perception)));
 
-            // if (std::find_if(perceptions->begin(), perceptions->end(), is_id) == perceptions->end())
-            //     break;
-
             graph.createLandmark(perceptions);
 
             std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
             graph.createPose(odometry);
 
-            if (i % (int)(5 / TIMESTAMP) == 0)
-                graph.optimize((5 / TIMESTAMP) + 1, true);
+            if (i % section == 0)
+                graph.optimize(section + 1, true);
 
             std::cerr << i << std::endl;
 
@@ -54,7 +51,7 @@ int main(int argc, char const *argv[])
             enor.next();
         }
 
-        graph.optimize(2001, true);
+        graph.optimize(-1, true);
 
         std::cout << graph;
         std::cout << "###" << std::endl;
@@ -63,10 +60,7 @@ int main(int argc, char const *argv[])
 
         for (const auto& lm : lms)
         {
-            // if (lm->id == 247)
-            // {
-                std::cout << *lm.second << std::endl;
-            // }
+            std::cout << *lm.second << std::endl;
         }
     }
     catch (const std::exception& e)

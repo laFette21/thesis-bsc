@@ -25,7 +25,7 @@ public:
 
     void createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Perception>>>&);
     void createPose(const std::shared_ptr<Odometry>&);
-    bool optimize(int, bool = false);
+    bool optimize(int = -1, bool = false);
 
     std::map<int, std::shared_ptr<Landmark>> getUniqueLandmarks() const { return m_unique_landmarks; }
 

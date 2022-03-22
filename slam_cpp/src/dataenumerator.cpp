@@ -7,7 +7,7 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
     os << "odometry: " << obj.odometry << std::endl;
 
     for (auto& perception : obj.perceptions)
-        os << "lm: " << perception << std::endl; 
+        os << "perception: " << perception << std::endl; 
 
     return os;
 }

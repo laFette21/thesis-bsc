@@ -58,6 +58,9 @@ bool Graph::optimize(int quantity, bool report)
     m_pose_cost_function = new ceres::AutoDiffCostFunction<PoseErrorFunction, 3, 3, 3, 2>(new PoseErrorFunction);
     m_landmark_cost_function = new ceres::AutoDiffCostFunction<LandmarkErrorFunction, 2, 3, 2, 2>(new LandmarkErrorFunction);
 
+    if (quantity < 0)
+        quantity = m_poses.size();
+
     auto start = std::prev(m_poses.end(), quantity);
     auto prev = start;
     auto curr = std::next(prev);
