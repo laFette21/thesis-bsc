@@ -49,12 +49,24 @@ int main(int argc, char const *argv[])
             enor.next();
         }
 
+        std::cout << graph;
+        std::cout << "###" << std::endl;
+
+        auto lms = graph.getUniqueLandmarks();
+
+        for (const auto& lm : lms)
+        {
+            std::cout << *lm.second << std::endl;
+        }
+
+        std::cout << "###" << std::endl;
+
         graph.optimize(-1, true);
 
         std::cout << graph;
         std::cout << "###" << std::endl;
 
-        auto lms = graph.getUniqueLandmarks();
+        lms = graph.getUniqueLandmarks();
 
         for (const auto& lm : lms)
         {
@@ -80,6 +92,8 @@ int main(int argc, char const *argv[])
 #define CATCH_CONFIG_MAIN
 #include "../include/catch.hpp"
 
+#define EPSILON 0.00001
+
 TEST_CASE("Test RotationMatrix2D", "[utility]")
 {
     SECTION("Identity matrix with theta = 0")
@@ -97,6 +111,56 @@ TEST_CASE("Test RotationMatrix2D", "[utility]")
         matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
 
         REQUIRE(matrix == RotationMatrix2D<double>(1));
+    }
+}
+
+TEST_CASE("Test PoseErrorFunction", "[utility]")
+{
+    SECTION("Input data without noise")
+    {
+        DataEnumerator enor("../data/input_kecso.txt");
+        std::vector<Odometry> measurements;
+
+        enor.first();
+
+        while (!enor.end())
+        {
+            measurements.emplace_back(enor.current().odometry);
+
+            enor.next();
+        }
+
+        std::vector<Pose> poses{Pose()};
+
+        for (int i = 0; i < measurements.size(); ++i)
+            poses.emplace_back(poses[i] += measurements[i]);
+
+        std::cerr << poses.size() << std::endl;
+
+        std::vector<Eigen::Vector3d> residuals(poses.size(), Eigen::Vector3d());
+
+        for (int i = 0; i < poses.size(); ++i)
+        {
+            measurements[i].data[0] *= 0.05;
+            measurements[i].data[1] *= 0.025;
+
+            PoseErrorFunction()(poses[i].data, poses[i + 1].data, measurements[i].data, residuals[i].data());
+        }
+
+        double error_x = 0, error_y = 0, error_psi = 0;
+
+        for (int i = 0; i < 99; ++i)
+        {
+            error_x += residuals[i](0);
+            error_y += residuals[i](1);
+            error_psi += residuals[i](2);
+        }
+
+        std::cerr << error_x << " " << error_y << " " << error_psi << std::endl;
+
+        REQUIRE(error_x <= EPSILON);
+        REQUIRE(error_y <= EPSILON);
+        REQUIRE(error_psi <= EPSILON);
     }
 }
 
