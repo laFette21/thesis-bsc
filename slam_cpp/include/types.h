@@ -17,7 +17,7 @@ struct Landmark
     int id;
 
     Landmark(int id = -1, double x = 0, double y = 0, int color = 0, double glob_x = 0, double glob_y = 0):
-        id(id), data{x, y}, color(color), ground_truth{glob_x, glob_y} {}
+        data{x, y}, ground_truth{glob_x, glob_y}, color(color), id(id) {}
 
     friend std::ostream& operator<<(std::ostream& os, const Landmark& obj)
     {
@@ -52,7 +52,7 @@ struct Perception
     int id;
 
     Perception(int id = -1, double distance = 0, double bearing = 0, int color = 0, double glob_x = 0, double glob_y = 0):
-        id(id), data{distance, bearing}, color(color), ground_truth{glob_x, glob_y} {}
+        data{distance, bearing}, ground_truth{glob_x, glob_y}, color(color), id(id) {}
 
     friend std::ostream& operator<<(std::ostream& os, const Perception& obj)
     {
@@ -74,7 +74,7 @@ struct Pose
     {
         data[0] += obj.data[0] * TIMESTAMP * ceres::cos(data[2] + obj.data[1] * TIMESTAMP * 0.5);
         data[1] += obj.data[0] * TIMESTAMP * ceres::sin(data[2] + obj.data[1] * TIMESTAMP * 0.5);
-        data[2] = NormalizeAngle(data[2] + obj.data[1] * TIMESTAMP);
+        data[2] = data[2] + obj.data[1] * TIMESTAMP;
 
         return *this;
     }

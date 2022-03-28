@@ -42,10 +42,8 @@ int main(int argc, char const *argv[])
             std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
             graph.createPose(odometry);
 
-            if (i % section == 0)
-                graph.optimize(section + 1, true);
-
-            std::cerr << i << std::endl;
+            // if (i % section == 0)
+            //     graph.optimize(section + 1, true);
 
             i++;
             enor.next();

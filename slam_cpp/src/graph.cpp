@@ -5,14 +5,12 @@ int Graph::m_last_id = 0;
 Graph::Graph()
 {
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose);
-    m_options.max_num_iterations = 500;
+    m_options.max_num_iterations = 100;
     m_options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
 }
 
 void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Perception>>>& measurements)
 {
-    std::map<int, std::shared_ptr<Pose>>::iterator curr = std::prev(m_poses.end());
-
     for (auto& measurement : *measurements)
     {
         std::shared_ptr<Landmark> lm;
@@ -44,7 +42,7 @@ void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
     m_prev_global_pose += *measurement;
 
     measurement->data[0] *= TIMESTAMP;
-    measurement->data[1] *= TIMESTAMP;
+    measurement->data[1] *= TIMESTAMP * 0.5;
     m_pose_measurements[m_last_id] = measurement;
 
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
@@ -73,6 +71,7 @@ bool Graph::optimize(int quantity, bool report)
         auto measurements = *m_landmark_measurements[curr->first];
 
         // TODO: optimize performance?
+        // sorfolytonos adattárolás (vector) -> cache friendly
         for (auto& lm : m_landmarks[curr->first])
         {
             auto is_id = [lm](std::shared_ptr<Perception> obj){ return obj->id == lm->id; };
