@@ -39,8 +39,8 @@ int main(int argc, char const *argv[])
 
             graph.createLandmark(perceptions);
 
-            std::shared_ptr<Odometry> odometry(new Odometry(enor.current().odometry));
-            graph.createPose(odometry);
+            std::shared_ptr<Motion> motion(new Motion(enor.current().motion));
+            graph.createPose(motion);
 
             // if (i % section == 0)
             //     graph.optimize(section + 1, true);
@@ -118,14 +118,14 @@ TEST_CASE("Test PoseErrorFunction", "[utility]")
 {
     SECTION("Input data without noise")
     {
-        DataEnumerator enor("../data/input_kecso.txt");
-        std::vector<Odometry> measurements;
+        DataEnumerator enor("../data/input_kecso_noisy.txt");
+        std::vector<Motion> measurements;
 
         enor.first();
 
         while (!enor.end())
         {
-            measurements.emplace_back(enor.current().odometry);
+            measurements.emplace_back(enor.current().motion);
 
             enor.next();
         }

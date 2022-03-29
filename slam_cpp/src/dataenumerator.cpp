@@ -4,7 +4,7 @@
 std::ostream& operator<<(std::ostream& os, const Data& obj)
 {
     os << std::setprecision(16);
-    os << "odometry: " << obj.odometry << std::endl;
+    os << "motion: " << obj.motion << std::endl;
 
     for (auto& perception : obj.perceptions)
         os << "perception: " << perception << std::endl; 
@@ -33,7 +33,7 @@ void DataEnumerator::next()
     if (!m_ss.fail())
     {
         std::vector<Perception> perceptions;
-        Odometry odometry;
+        Motion motion;
         double vel = 0, ang_vel = 0, count = 0;
         double trash;
 
@@ -41,16 +41,16 @@ void DataEnumerator::next()
         {
             m_ss >> trash >> vel >> ang_vel;
 
-            odometry.data[0] += vel;
-            odometry.data[1] += ang_vel;
+            motion.data[0] += vel;
+            motion.data[1] += ang_vel;
             count += 1;
 
             m_end = !read_next_not_empty_line();
             m_ss >> type;
         }
 
-        odometry.data[0] /= count;
-        odometry.data[1] /= count;
+        motion.data[0] /= count;
+        motion.data[1] /= count;
 
         while (!m_end && type == 'p')
         {
@@ -69,7 +69,7 @@ void DataEnumerator::next()
         temp << m_ss.rdbuf();
         m_ss = std::move(temp);
 
-        m_data.odometry = odometry;
+        m_data.motion = motion;
         m_data.perceptions = perceptions;
     }
 }

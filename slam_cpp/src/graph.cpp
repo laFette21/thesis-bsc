@@ -37,7 +37,7 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Per
     m_landmark_measurements[m_last_id] = measurements;
 }
 
-void Graph::createPose(const std::shared_ptr<Odometry>& measurement)
+void Graph::createPose(const std::shared_ptr<Motion>& measurement)
 {
     m_prev_global_pose += *measurement;
 

@@ -29,13 +29,13 @@ struct Landmark
     }
 };
 
-struct Odometry
+struct Motion
 {
     double data[2];
 
-    Odometry(double velocity = 0, double angular_velocity = 0): data{velocity, angular_velocity} {}
+    Motion(double velocity = 0, double angular_velocity = 0): data{velocity, angular_velocity} {}
 
-    friend std::ostream& operator<<(std::ostream& os, const Odometry& obj)
+    friend std::ostream& operator<<(std::ostream& os, const Motion& obj)
     {
         os << std::setprecision(16);
         os << obj.data[0] << ' ' << obj.data[1];
@@ -70,7 +70,7 @@ struct Pose
 
     Pose(double x = 0, double y = 0, double psi = 0): data{x, y, psi} {}
 
-    Pose& operator+=(Odometry& obj)
+    Pose& operator+=(Motion& obj)
     {
         data[0] += obj.data[0] * TIMESTAMP * ceres::cos(data[2] + obj.data[1] * TIMESTAMP * 0.5);
         data[1] += obj.data[0] * TIMESTAMP * ceres::sin(data[2] + obj.data[1] * TIMESTAMP * 0.5);

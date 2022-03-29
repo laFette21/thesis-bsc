@@ -16,7 +16,7 @@ class Graph
     std::map<int, std::vector<std::shared_ptr<Landmark>>> m_landmarks;
     Pose m_prev_global_pose;
     std::map<int, std::shared_ptr<Landmark>> m_unique_landmarks;
-    std::map<int, std::shared_ptr<Odometry>> m_pose_measurements;
+    std::map<int, std::shared_ptr<Motion>> m_pose_measurements;
     std::map<int, std::shared_ptr<std::vector<std::shared_ptr<Perception>>>> m_landmark_measurements;
     static int m_last_id;
 
@@ -24,7 +24,7 @@ public:
     Graph();
 
     void createLandmark(const std::shared_ptr<std::vector<std::shared_ptr<Perception>>>&);
-    void createPose(const std::shared_ptr<Odometry>&);
+    void createPose(const std::shared_ptr<Motion>&);
     bool optimize(int = -1, bool = false);
 
     std::map<int, std::shared_ptr<Landmark>> getUniqueLandmarks() const { return m_unique_landmarks; }
