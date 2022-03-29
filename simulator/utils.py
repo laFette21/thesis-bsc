@@ -1,7 +1,6 @@
-from math import atan2, radians
 from typing import Union
 
-from numpy import cos, linspace, max, min, pi, sin, size
+from numpy import arctan2, cos, linspace, max, min, pi, radians, sin, size
 from numpy.random import normal
 from scipy.interpolate import splev, splprep
 
@@ -26,7 +25,7 @@ def get_cones_in_front_of_car(pose, cones: list[Cone]):
         temp.coord.move(-pose.get_coord().get_x(), -pose.get_coord().get_y())
         temp.coord.rotate(-pose.get_angle())
         distance = temp.coord.distance(Point(0, 0))
-        angle = atan2(
+        angle = arctan2(
             temp.get_coord().get_y(),
             temp.get_coord().get_x()
         )
@@ -75,13 +74,13 @@ def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
     return result, indices
 
 
-def write_data_to_file(filename, cones, poses, odometry, noisy):
+def write_data_to_file(filename, cones, poses, motion, noisy):
     timestamp = 0
 
     with open(filename, 'w') as oF:
         for i in range(size(poses, 0)):
-            speed = odometry[i].get_speed()
-            angular_velocity = odometry[i].get_angular_velocity()
+            speed = motion[i].get_speed()
+            angular_velocity = motion[i].get_angular_velocity()
 
             if noisy:
                 speed += speed * normal(0, SPEED_NOISE)
@@ -89,7 +88,7 @@ def write_data_to_file(filename, cones, poses, odometry, noisy):
 
             print('o', timestamp / 1000.0, speed, angular_velocity, file=oF)
 
-            if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0:
+            if i % (PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0:
                 cones_in_range = get_cones_in_front_of_car(poses[i], cones)
 
                 # if perception:
@@ -107,4 +106,4 @@ def write_data_to_file(filename, cones, poses, odometry, noisy):
                     orientation = c[2]  # normal(c[2], BEARING_NOISE ** 2) if noisy else c[2]
                     print('p', timestamp / 1000.0, distance, orientation, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
 
-            timestamp += ODOMETRY_SAMPLING
+            timestamp += MOTION_SAMPLING

@@ -1,5 +1,4 @@
 import argparse
-import math
 from csv import reader
 from os import path
 
@@ -8,7 +7,7 @@ import numpy as np
 
 from cone import Cone, ConeColor
 from config import *
-from odometry import Odometry
+from motion import Motion
 from point import Point
 from pose import Pose
 from utils import *
@@ -32,24 +31,24 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
 
     # Modifying the coordinate system
     origin = Point(points[0].get_x(), points[0].get_y())
-    first_rotation = math.atan2(points[1].get_y() - origin.get_y(), points[1].get_x() - origin.get_x())
+    first_rotation = np.arctan2(points[1].get_y() - origin.get_y(), points[1].get_x() - origin.get_x())
 
     for p in points:
         p.move(-origin.get_x(), -origin.get_y())
         p.rotate(-first_rotation)
 
-    # Calculating the angle of rotation for odometry
+    # Calculating the angle of rotation for poses
     rotations = [0]
 
     for i in range(1, len(points) - 1):
-        angle1 = math.atan2(points[i].get_y() - points[i - 1].get_y(), points[i].get_x() - points[i - 1].get_x())
-        angle2 = math.atan2(points[i + 1].get_y() - points[i].get_y(), points[i + 1].get_x() - points[i].get_x())
-        if math.copysign(1, angle1) == math.copysign(1, angle2):
+        angle1 = np.arctan2(points[i].get_y() - points[i - 1].get_y(), points[i].get_x() - points[i - 1].get_x())
+        angle2 = np.arctan2(points[i + 1].get_y() - points[i].get_y(), points[i + 1].get_x() - points[i].get_x())
+        if np.copysign(1, angle1) == np.copysign(1, angle2):
             angle = angle1 + angle2
         else:
-            dominant = angle1 if math.pi - abs(angle1) > math.pi - abs(angle2) else angle2
+            dominant = angle1 if np.pi - abs(angle1) > np.pi - abs(angle2) else angle2
             angle = abs(angle1) + abs(angle2)
-            math.copysign(angle, dominant)
+            np.copysign(angle, dominant)
         rotations.append(angle / 2.0)
 
     rotations.append(rotations[-1])
@@ -75,56 +74,56 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
         cone_distance_data[i] = (1 - cone_distance_data[i]) * CONE_DISTANCE
 
     poses = [Pose(points[i], rotations[i]) for i in range(len(points))]
-    velocity_data = (velocity_data / 1000.0) * ODOMETRY_SAMPLING
+    velocity_data = (velocity_data / 1000.0) * MOTION_SAMPLING
     sparse_poses, sparse_pose_indices = select_data(poses, velocity_data)
-    velocity_data = (velocity_data / ODOMETRY_SAMPLING) * 1000.0
+    velocity_data = (velocity_data / MOTION_SAMPLING) * 1000.0
 
-    odometry: list[Odometry] = []
+    motion: list[Motion] = []
 
     for i in range(len(sparse_poses) - 1):
         angle1 = sparse_poses[i + 1].get_angle()
         angle2 = sparse_poses[i].get_angle()
-        if math.copysign(1, angle1) == math.copysign(1, angle2):
+        if np.copysign(1, angle1) == np.copysign(1, angle2):
             difference = angle1 - angle2
         else:
-            dominant = angle1 if math.pi - abs(angle1) > math.pi - abs(angle2) else angle2
+            dominant = angle1 if np.pi - abs(angle1) > np.pi - abs(angle2) else angle2
             difference = abs(abs(angle1) - abs(angle2))
-            math.copysign(difference, dominant)
-        odometry.append(
-            Odometry(
+            np.copysign(difference, dominant)
+        motion.append(
+            Motion(
                 velocity_data[sparse_pose_indices[i]],
-                difference / (ODOMETRY_SAMPLING / 1000.0)
+                difference / (MOTION_SAMPLING / 1000.0)
             )
         )
 
-    odometry.append(Odometry(odometry[-1].get_speed(), odometry[-1].get_angular_velocity()))
+    motion.append(Motion(motion[-1].get_speed(), motion[-1].get_angular_velocity()))
 
     if route:
         coord_x = [0]
         coord_y = [0]
         phi = [0]
 
-        for i in range(len(odometry)):
-            if odometry[i].get_angular_velocity() != 0:
-                R = odometry[i].get_speed() / odometry[i].get_angular_velocity()
+        for i in range(len(motion)):
+            if motion[i].get_angular_velocity() != 0:
+                R = motion[i].get_speed() / motion[i].get_angular_velocity()
             else:
                 R = 0
-            x2 = coord_x[-1] + R * (-math.sin(phi[-1]) + math.sin(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0)))
-            y2 = coord_y[-1] + R * (math.cos(phi[-1]) - math.cos(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0)))
+            x2 = coord_x[-1] + R * (-np.sin(phi[-1]) + np.sin(phi[-1] + motion[i].get_angular_velocity() * (MOTION_SAMPLING / 1000.0)))
+            y2 = coord_y[-1] + R * (np.cos(phi[-1]) - np.cos(phi[-1] + motion[i].get_angular_velocity() * (MOTION_SAMPLING / 1000.0)))
             plt.plot([coord_x[-1], x2], [coord_y[-1], y2], '-', color='green')
             coord_x.append(x2)
             coord_y.append(y2)
-            phi.append(phi[-1] + odometry[i].get_angular_velocity() * (ODOMETRY_SAMPLING / 1000.0))
+            phi.append(phi[-1] + motion[i].get_angular_velocity() * (MOTION_SAMPLING / 1000.0))
 
-    x = [p.get_coord().get_x() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0]
-    y = [p.get_coord().get_y() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / ODOMETRY_SAMPLING) == 0]
+    x = [p.get_coord().get_x() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0]
+    y = [p.get_coord().get_y() for i, p in enumerate(sparse_poses) if i % (PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0]
 
     # plt.plot(x, y, '.', color='black')
 
     if directions:
         for i in range(len(sparse_poses)):
-            x2 = sparse_poses[i].get_coord().get_x() + 5 * math.cos(sparse_poses[i].get_angle())
-            y2 = sparse_poses[i].get_coord().get_y() + 5 * math.sin(sparse_poses[i].get_angle())
+            x2 = sparse_poses[i].get_coord().get_x() + 5 * np.cos(sparse_poses[i].get_angle())
+            y2 = sparse_poses[i].get_coord().get_y() + 5 * np.sin(sparse_poses[i].get_angle())
             plt.plot(
                 [sparse_poses[i].get_coord().get_x(), x2],
                 [sparse_poses[i].get_coord().get_y(), y2],
@@ -138,7 +137,7 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
     right_side_points: list[Point] = []
 
     for i in range(len(x)):
-        gradient_norm = math.sqrt(gradient_x[i] * gradient_x[i] + gradient_y[i] * gradient_y[i])
+        gradient_norm = np.sqrt(gradient_x[i] * gradient_x[i] + gradient_y[i] * gradient_y[i])
         left_side_points.append(Point(
             x[i] + TRACK_HALF_WIDTH * (-gradient_y[i] / gradient_norm),
             y[i] + TRACK_HALF_WIDTH * (gradient_x[i] / gradient_norm)
@@ -190,19 +189,23 @@ def main(directions: bool, noisy: bool, perception: bool, route: bool):
     )
 
     all_cones = [*sparse_blue_cones, *sparse_yellow_cones]
-    actual_poses = np.zeros((len(odometry), 3))
-    ts = ODOMETRY_SAMPLING / 1000.0
+    actual_poses = np.zeros((len(motion), 3))
+    ts = MOTION_SAMPLING / 1000.0
 
     for i in range(1, np.size(actual_poses, 0)):
-        actual_poses[i, 0] = actual_poses[i - 1, 0] + odometry[i].get_speed() * ts * np.cos(actual_poses[i - 1, 2] + odometry[i].get_angular_velocity() * ts / 2)
-        actual_poses[i, 1] = actual_poses[i - 1, 1] + odometry[i].get_speed() * ts * np.sin(actual_poses[i - 1, 2] + odometry[i].get_angular_velocity() * ts / 2)
-        actual_poses[i, 2] = actual_poses[i - 1, 2] + odometry[i].get_angular_velocity() * ts
+        actual_poses[i, 0] = actual_poses[i - 1, 0] + motion[i].get_speed() * ts * np.cos(actual_poses[i - 1, 2] + motion[i].get_angular_velocity() * ts / 2)
+        actual_poses[i, 1] = actual_poses[i - 1, 1] + motion[i].get_speed() * ts * np.sin(actual_poses[i - 1, 2] + motion[i].get_angular_velocity() * ts / 2)
+        actual_poses[i, 2] = actual_poses[i - 1, 2] + motion[i].get_angular_velocity() * ts
 
     plt.plot(actual_poses[:, 0], actual_poses[:, 1], '.', color='purple')
 
-    write_data_to_file(f'output_{filename}.txt', cones=all_cones.copy(), poses=actual_poses.copy(), odometry=odometry.copy(), noisy=False)
+    write_data_to_file(f'output_{filename}.txt', cones=all_cones.copy(), poses=actual_poses.copy(), motion=motion.copy(), noisy=False)
     if noisy:
-        write_data_to_file(f'output_{filename}_noisy.txt', cones=all_cones.copy(), poses=actual_poses.copy(), odometry=odometry.copy(), noisy=True)
+        write_data_to_file(f'output_{filename}_noisy.txt', cones=all_cones.copy(), poses=actual_poses.copy(), motion=motion.copy(), noisy=True)
+
+    with open(f'{filename}_poses_gt.txt', 'w') as oF:
+        for p in actual_poses:
+            print(p[0], p[1], p[2], file=oF)
 
     plt.axis('equal')
     plt.savefig('track.png', dpi=500)

@@ -1,4 +1,4 @@
-from math import cos, sin, sqrt
+from numpy import cos, sin, sqrt
 
 
 class Point:

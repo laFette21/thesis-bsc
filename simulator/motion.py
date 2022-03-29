@@ -1,5 +1,5 @@
-class Odometry:
-    """Create an odometry object."""
+class Motion:
+    """Create an motion object."""
 
     def __init__(self, speed, angular_velocity):
         self.speed = speed
