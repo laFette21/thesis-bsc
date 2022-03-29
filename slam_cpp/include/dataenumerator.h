@@ -11,12 +11,12 @@
 
 struct Data
 {
-    Odometry odometry;
+    Motion motion;
     std::vector<Perception> perceptions;
 
     Data() {}
-    Data(const Odometry& odometry, const std::vector<Perception>& perceptions):
-        odometry(odometry), perceptions(perceptions) {}
+    Data(const Motion& motion, const std::vector<Perception>& perceptions):
+        motion(motion), perceptions(perceptions) {}
 
     friend std::ostream& operator<<(std::ostream&, const Data&);
 };
