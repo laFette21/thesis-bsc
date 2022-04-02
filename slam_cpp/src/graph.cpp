@@ -48,6 +48,27 @@ void Graph::createPose(const std::shared_ptr<Motion>& measurement)
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose(m_prev_global_pose));
 }
 
+std::vector<double> Graph::debug(ceres::Problem& problem, const DebugOption& debug_option)
+{
+    double total_cost = 0.0;
+    std::vector<double> evaluated_residuals;
+    ceres::Problem::EvaluateOptions options;
+
+    if (debug_option == DebugOption::POSE)
+        options.residual_blocks = m_pose_residual_ids;
+    else if (debug_option == DebugOption::LANDMARK)
+        options.residual_blocks = m_lm_residual_ids;
+    else
+    {
+        options.residual_blocks = m_pose_residual_ids;
+        options.residual_blocks.insert(options.residual_blocks.end(), m_lm_residual_ids.begin(), m_lm_residual_ids.end());
+    }
+
+    problem.Evaluate(options, &total_cost, &evaluated_residuals, nullptr, nullptr);
+
+    return evaluated_residuals;
+}
+
 bool Graph::optimize(int quantity, bool report)
 {
     ceres::Problem problem;
@@ -65,8 +86,15 @@ bool Graph::optimize(int quantity, bool report)
 
     while (curr != m_poses.end())
     {
-        problem.AddResidualBlock(m_pose_cost_function, nullptr, prev->second->data, curr->second->data, m_pose_measurements[curr->first]->data);
+        ceres::ResidualBlockId pose_residual_id = problem.AddResidualBlock(
+            m_pose_cost_function,
+            nullptr,
+            prev->second->data,
+            curr->second->data,
+            m_pose_measurements[curr->first]->data
+        );
         problem.SetParameterBlockConstant(m_pose_measurements[curr->first]->data);
+        m_pose_residual_ids.push_back(pose_residual_id);
 
         auto measurements = *m_landmark_measurements[curr->first];
 
@@ -77,8 +105,11 @@ bool Graph::optimize(int quantity, bool report)
             auto is_id = [lm](std::shared_ptr<Perception> obj){ return obj->id == lm->id; };
             auto meas = std::find_if(measurements.begin(), measurements.end(), is_id);
 
-            problem.AddResidualBlock(m_landmark_cost_function, nullptr, prev->second->data, lm->data, meas->get()->data);
+            ceres::ResidualBlockId lm_residual_id = problem.AddResidualBlock(
+                m_landmark_cost_function, nullptr, prev->second->data, lm->data, meas->get()->data
+            );
             problem.SetParameterBlockConstant(meas->get()->data);
+            m_lm_residual_ids.push_back(lm_residual_id);
         }
 
         prev++;
@@ -88,7 +119,31 @@ bool Graph::optimize(int quantity, bool report)
     // Set anchor for first pose
     problem.SetParameterBlockConstant(start->second->data);
 
+    auto residuals = debug(problem, DebugOption::BOTH);
+    double total_cost = 0;
+
+    for (auto& residual : residuals)
+    {
+        // std::cerr << residual << std::endl;
+        total_cost += residual * residual;
+    }
+
+    std::cout << "Total cost before optimization: " << total_cost / 2 << std::endl;
+
+    // return false;
+
     Solve(m_options, &problem, &summary);
+
+    residuals = debug(problem, DebugOption::BOTH);
+    total_cost = 0;
+
+    for (auto& residual : residuals)
+    {
+        // std::cerr << residual << std::endl;
+        total_cost += residual * residual;
+    }
+
+    std::cout << "Total cost after optimization: " << total_cost / 2 << std::endl;
 
     if (report)
         std::cerr << summary.FullReport() << std::endl;
