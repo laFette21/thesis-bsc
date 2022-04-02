@@ -13,23 +13,23 @@ class ConeColor(Enum):
 class Cone:
     """Create a cone object."""
 
-    def __init__(self, index, color: ConeColor, coord: Point):
+    def __init__(self, index: int, color: ConeColor, coord: Point):
         self.index = index
         self.color = color
         self.coord = coord
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ' '.join([
             f"{self.coord}",
             f"{self.color.value}",
             f"{self.index}"
         ])
 
-    def get_index(self):
+    def get_index(self) -> int:
         return self.index
 
-    def get_color(self):
+    def get_color(self) -> ConeColor:
         return self.color
 
-    def get_coord(self):
+    def get_coord(self) -> Point:
         return Point(self.coord.get_x(), self.coord.get_y())

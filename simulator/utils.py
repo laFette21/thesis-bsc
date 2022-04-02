@@ -1,5 +1,6 @@
 from typing import Union
 
+import matplotlib.pyplot as plt
 from numpy import arctan2, cos, linspace, max, min, pi, radians, sin, size
 from numpy.random import normal
 from scipy.interpolate import splev, splprep
@@ -23,7 +24,7 @@ def get_cones_in_front_of_car(pose, cones: list[Cone]):
         original_position = c.get_coord()
         temp = Cone(c.get_index(), c.get_color(), c.get_coord())
         temp.coord.move(-pose.get_coord().get_x(), -pose.get_coord().get_y())
-        temp.coord.rotate(-pose.get_angle())
+        temp.coord.rotate(-pose.get_orientation())
         distance = temp.coord.distance(Point(0, 0))
         angle = arctan2(
             temp.get_coord().get_y(),
@@ -31,7 +32,7 @@ def get_cones_in_front_of_car(pose, cones: list[Cone]):
         )
         temp.coord = original_position
 
-        if abs(angle) <= radians(FIELD_OF_VIEW / 2.0):
+        if abs(angle) <= (FIELD_OF_VIEW / 2.0):
             result.append((temp, distance, angle))
 
     return result
@@ -74,7 +75,7 @@ def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
     return result, indices
 
 
-def write_data_to_file(filename, cones, poses, motion, noisy):
+def write_data_to_file(filename, cones, poses, motion, noisy, perception):
     timestamp = 0
 
     with open(filename, 'w') as oF:
@@ -86,24 +87,24 @@ def write_data_to_file(filename, cones, poses, motion, noisy):
                 speed += speed * normal(0, SPEED_NOISE)
                 angular_velocity += angular_velocity * normal(0, ANGULAR_VELOCITY_NOISE)
 
-            print('o', timestamp / 1000.0, speed, angular_velocity, file=oF)
+            print('o', round(timestamp, 3), speed, angular_velocity, file=oF)
 
-            if i % (PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0:
+            if i % int(PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0:
                 cones_in_range = get_cones_in_front_of_car(poses[i], cones)
 
-                # if perception:
-                #     for j in range(len(cones_in_range)):
-                #         x2 = poses[i, 0] + cones_in_range[j][1] * cos(cones[j][2] + poses[i, 2])
-                #         y2 = poses[i, 1] + cones_in_range[j][1] * sin(cones[j][2] + poses[i, 2])
-                #         plt.plot(
-                #             [poses[i, 0], x2],
-                #             [poses[i, 1], y2],
-                #             color='green',
-                #         )
+                if perception:
+                    for j in range(len(cones_in_range)):
+                        x2 = poses[i, 0] + cones_in_range[j][1] * cos(cones_in_range[j][2] + poses[i, 2])
+                        y2 = poses[i, 1] + cones_in_range[j][1] * sin(cones_in_range[j][2] + poses[i, 2])
+                        plt.plot(
+                            [poses[i, 0], x2],
+                            [poses[i, 1], y2],
+                            color='red',
+                        )
 
                 for c in cones_in_range:
-                    distance = c[1]  # normal(c[1], DISTANCE_NOISE ** 2) if noisy else c[1]
-                    orientation = c[2]  # normal(c[2], BEARING_NOISE ** 2) if noisy else c[2]
-                    print('p', timestamp / 1000.0, distance, orientation, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
+                    distance = c[1]
+                    orientation = c[2]
+                    print('p', round(timestamp, 3), distance, orientation, c[0].get_color().value, c[0].get_index(), c[0].get_coord(), file=oF)
 
             timestamp += MOTION_SAMPLING
