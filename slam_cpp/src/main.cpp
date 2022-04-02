@@ -16,9 +16,9 @@ int main(int argc, char const *argv[])
 {
     auto start = std::chrono::steady_clock::now();
 
-    if (argc < 2)
+    if (argc < 3)
     {
-        std::cerr << "Usage: " << argv[0] << " <path/to/file>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path/to/input/file>" << " <path/to/output/file>" << std::endl;
         return 1;
     }
 
@@ -44,34 +44,39 @@ int main(int argc, char const *argv[])
 
             // if (i % section == 0)
             //     graph.optimize(section + 1, true);
+            // if (i == 700) break;
 
             i++;
             enor.next();
         }
 
-        std::cout << graph;
-        std::cout << "###" << std::endl;
+        std::ofstream output(argv[2]);
+
+        output << graph;
+        output << "###" << std::endl;
 
         auto lms = graph.getUniqueLandmarks();
 
         for (const auto& lm : lms)
         {
-            std::cout << *lm.second << std::endl;
+            output << *lm.second << std::endl;
         }
 
-        std::cout << "###" << std::endl;
+        output << "###" << std::endl;
 
         graph.optimize(-1, true);
 
-        std::cout << graph;
-        std::cout << "###" << std::endl;
+        output << graph;
+        output << "###" << std::endl;
 
         lms = graph.getUniqueLandmarks();
 
         for (const auto& lm : lms)
         {
-            std::cout << *lm.second << std::endl;
+            output << *lm.second << std::endl;
         }
+
+        output.close();
     }
     catch (const std::exception& e)
     {
