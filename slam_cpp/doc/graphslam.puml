@@ -1,0 +1,135 @@
+@startuml GraphSlam
+
+skinparam Monochrome true
+skinparam ClassAttributeIconSize 0
+
+class Landmark
+{
+    +data: double[2]
+    +ground_truth: double[2]
+    +color: int
+    +id: int
+
+    Landmark(id: int, x: double, y: double, color: int,
+    \tglob_x: double, glob_y: double)
+
+    operator<<(ostream&, const Landmark&): ostream&
+}
+
+class Motion
+{
+    +data: double[2]
+
+    Motion(velocity: double, angular_velocity: double)
+
+    operator<<(ostream&, const Motion&): ostream&
+}
+
+class Perception
+{
+    +data: double[2]
+    +ground_truth: double[2]
+    +color: int
+    +id: int
+
+    Perception(id: int, distance: double, bearing: double,
+    \tcolor: int, glob_x: double, glob_y: double)
+
+    operator<<(ostream&, const Perception&): ostream&
+}
+
+class Pose
+{
+    +data: double[3]
+
+    Pose(x: double, y: double, psi: double)
+
+    operator+=(const Motion&): Pose&
+    operator<<(ostream&, const Pose&): ostream&
+}
+
+class LandmarkErrorFunction
+{
+    operator()(pose: const T* const, landmark: const T* const, 
+    \tmeasurements: const T* const, residuals: T*) const: bool
+}
+
+class PosekErrorFunction
+{
+    operator()(prev: const T* const, curr: const T* const, 
+    \tmeas: const T* const, residuals: T*) const: bool
+}
+
+enum DebugOptions
+{
+    POSE
+    LANDMARK
+    BOTH
+}
+
+class Graph
+{
+    -{static}_last_id: int
+    -_pose_cost_function: ceres::CostFunction*
+    -_landmark_cost_function: ceres::CostFunction*
+    -_options: ceres::Solver::Options
+    -_prev_global_pose: Pose
+    -_poses: map<int, Pose*>
+    -_landmarks: map<int, vector<Landmark*>>
+    -_unique_landmarks: map<int, Landmark*>
+    -_pose_measurements: map<int, Motion*>
+    -_landmark_measurements: map<int, vector<Perception*>*>
+    -_pose_residual_ids: vector<ceres::ResidualBlockId>
+    -_lm_residual_ids: vector<ceres::ResidualBlockId>
+
+    Graph()
+
+    createLandmark(const vector<Perception*>*&): void
+    createPose(const Motion*&): void
+    optimize(quantity: int, report: bool): bool
+    debug(problem: ceres::Problem&,
+    \tdebug_option: DebugOptions): vector<double>
+    getUniqueLandmarks() const: map<int Landmark*>
+
+    operator<<(ostream&, const Graph&): ostream&
+}
+
+class Data
+{
+    +motion: Motion
+    +perceptions: vector<Perception>
+
+    Data()
+    Data(motion: const Motion&,
+    \tperceptions: const vector<Perception>&)
+
+    operator<<(ostream&, const Data&): ostream&
+}
+
+class DataEnumerator
+{
+    -_file: ifstream
+    -_ss: stringstream
+    -_data: Data
+    -_end: bool
+
+    DataEnumerator(filename: const string&)
+
+    first(): void
+    next(): void
+    end() const: bool
+    current() const: Data
+    read_next_not_empty_line(): bool
+}
+
+note right of DataEnumerator::end()
+    return _end
+end note
+note right of DataEnumerator::current()
+    return _data
+end note
+
+hide circle
+hide enum methods
+
+@enduml
