@@ -1,0 +1,57 @@
+@startuml Simulator
+
+skinparam Monochrome true
+skinparam ClassAttributeIconSize 0
+
+enum ConeColor
+{
+    BLUE
+    YELLOW
+}
+
+class Cone
+{
+    -index: int
+    -color: ConeColor
+    -coord: Point
+
+    +get_index(): int
+    +get_color(): ConeColor
+    +get_coord(): Point
+}
+
+class Motion
+{
+    -speed: float
+    -angular_velocity: float
+
+    +get_speed(): float
+    +get_angular_velocity(): float
+}
+
+class Point
+{
+    -x: float
+    -y: float
+
+    +move(dx: float, dy: float): void
+    +rotate(radians: float): void
+    +distance(other: Point): float
+
+    +get_x(): float
+    +get_y(): float
+}
+
+class Pose
+{
+    -coord: Point
+    -orientation: float
+
+    +get_coord(): Point
+    +get_orientation(): float
+}
+
+hide circle
+hide enum methods
+
+@enduml
