@@ -11,6 +11,7 @@
 #ifdef NORMAL_MODE
 
 static constexpr int section = (int)(5 / TIMESTAMP);
+static constexpr bool enable_loop_closure = true;
 
 int main(int argc, char const *argv[])
 {
@@ -24,14 +25,43 @@ int main(int argc, char const *argv[])
 
     try
     {
+        std::ofstream output(argv[2]);
         DataEnumerator enor(argv[1]);
         Graph graph;
+        bool flag = true;
+        std::set<int> first_lm_ids;
         int i = 1;
 
         enor.first();
 
+        if (!enable_loop_closure)
+            first_lm_ids = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
+
         while (!enor.end())
         {
+            if (!enable_loop_closure && flag)
+            {
+                std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
+                bool b = false;
+
+                for (auto& lm_id : first_lm_ids)
+                    b |= current_perceptions.contains(lm_id);
+
+                if (!b)
+                    flag = false;
+            }
+            else if (!enable_loop_closure && !flag)
+            {
+                std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
+                bool b = false;
+
+                for (auto& lm_id : first_lm_ids)
+                    b |= current_perceptions.contains(lm_id);
+
+                if (b)
+                    break;
+            }
+
             std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
 
             for (auto& perception : enor.current().perceptions)
@@ -41,17 +71,40 @@ int main(int argc, char const *argv[])
 
             std::shared_ptr<Motion> motion(new Motion(enor.current().motion));
             graph.createPose(motion);
+/*
+            if (i % section == 0)
+            {
+                output << "===" << std::endl;
+                output << graph;
+                output << "###" << std::endl;
 
-            // if (i % section == 0)
-            //     graph.optimize(section + 1, true);
-            // if (i == 700) break;
+                auto lms = graph.getUniqueLandmarks();
 
+                for (const auto& lm : lms)
+                {
+                    output << *lm.second << std::endl;
+                }
+
+                output << "###" << std::endl;
+
+                graph.optimize();
+
+                output << graph;
+                output << "###" << std::endl;
+
+                lms = graph.getUniqueLandmarks();
+
+                for (const auto& lm : lms)
+                {
+                    output << *lm.second << std::endl;
+                }
+            }
+*/
             i++;
             enor.next();
         }
 
-        std::ofstream output(argv[2]);
-
+        output << "===" << std::endl;
         output << graph;
         output << "###" << std::endl;
 
@@ -75,6 +128,9 @@ int main(int argc, char const *argv[])
         {
             output << *lm.second << std::endl;
         }
+
+        output << "===" << std::endl;
+        output << "END" << std::endl;
 
         output.close();
     }

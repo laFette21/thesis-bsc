@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <random>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -17,6 +19,7 @@ struct Data
     Data() {}
     Data(const Motion& motion, const std::vector<Perception>& perceptions):
         motion(motion), perceptions(perceptions) {}
+    static std::set<int> getLandmarkIdsFromPerceptions(const std::vector<Perception>&);
 
     friend std::ostream& operator<<(std::ostream&, const Data&);
 };
