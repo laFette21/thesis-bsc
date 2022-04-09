@@ -5,7 +5,7 @@ int Graph::m_last_id = 0;
 Graph::Graph()
 {
     m_poses[m_last_id++] = std::shared_ptr<Pose>(new Pose);
-    m_options.max_num_iterations = 100;
+    m_options.max_num_iterations = 500;
     m_options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
 }
 
@@ -66,6 +66,8 @@ std::vector<double> Graph::debug(ceres::Problem& problem, const DebugOption& deb
 
     problem.Evaluate(options, &total_cost, &evaluated_residuals, nullptr, nullptr);
 
+    // TODO: Pontosan mi a residual itt? Residual tömb, vagy valami normált érték?
+
     return evaluated_residuals;
 }
 
@@ -118,7 +120,7 @@ bool Graph::optimize(int quantity, bool report)
 
     // Set anchor for first pose
     problem.SetParameterBlockConstant(start->second->data);
-
+/*
     auto residuals = debug(problem, DebugOption::BOTH);
     double total_cost = 0;
 
@@ -131,9 +133,9 @@ bool Graph::optimize(int quantity, bool report)
     std::cout << "Total cost before optimization: " << total_cost / 2 << std::endl;
 
     // return false;
-
+*/
     Solve(m_options, &problem, &summary);
-
+/*
     residuals = debug(problem, DebugOption::BOTH);
     total_cost = 0;
 
@@ -144,7 +146,7 @@ bool Graph::optimize(int quantity, bool report)
     }
 
     std::cout << "Total cost after optimization: " << total_cost / 2 << std::endl;
-
+*/
     if (report)
         std::cerr << summary.FullReport() << std::endl;
 
