@@ -19,6 +19,7 @@ struct Data
     Data() {}
     Data(const Motion& motion, const std::vector<Perception>& perceptions):
         motion(motion), perceptions(perceptions) {}
+
     static std::set<int> getLandmarkIdsFromPerceptions(const std::vector<Perception>&);
 
     friend std::ostream& operator<<(std::ostream&, const Data&);
@@ -26,18 +27,20 @@ struct Data
 
 class DataEnumerator
 {
-    std::ifstream m_file;
-    std::stringstream m_ss;
-    Data m_data;
-    bool m_end;
-
 public:
     DataEnumerator(const std::string&);
+
+    Data current() const { return _data; }
     void first();
     void next();
-    bool end() const { return m_end; }
-    Data current() const { return m_data; }
+    bool end() const { return _end; }
     bool read_next_not_empty_line();
+
+private:
+    std::ifstream _file;
+    std::stringstream _ss;
+    Data _data;
+    bool _end;
 };
 
 #endif // DATAENUMERATOR_H

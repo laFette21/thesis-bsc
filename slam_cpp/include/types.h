@@ -78,6 +78,7 @@ struct Pose
 
         return *this;
     }
+
     friend std::ostream& operator<<(std::ostream& os, const Pose& obj)
     {
         os << std::setprecision(16);
