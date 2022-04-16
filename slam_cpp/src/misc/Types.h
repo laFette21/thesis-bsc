@@ -3,9 +3,6 @@
 
 #include <iomanip>
 
-#include <ceres/ceres.h>
-#include <Eigen/Core>
-
 static constexpr double timestamp = 0.05; // 50 ms
 
 struct Landmark
@@ -17,6 +14,8 @@ struct Landmark
 
     Landmark(int id = -1, double x = 0, double y = 0, int color = 0, double glob_x = 0, double glob_y = 0):
         data{x, y}, ground_truth{glob_x, glob_y}, color(color), id(id) {}
+
+    bool operator==(const Landmark&) const = default;
 
     friend std::ostream& operator<<(std::ostream& os, const Landmark& obj)
     {
@@ -33,6 +32,8 @@ struct Motion
     double data[2];
 
     Motion(double velocity = 0, double angular_velocity = 0): data{velocity, angular_velocity} {}
+
+    bool operator==(const Motion&) const = default;
 
     friend std::ostream& operator<<(std::ostream& os, const Motion& obj)
     {
@@ -53,6 +54,8 @@ struct Perception
     Perception(int id = -1, double distance = 0, double bearing = 0, int color = 0, double glob_x = 0, double glob_y = 0):
         data{distance, bearing}, ground_truth{glob_x, glob_y}, color(color), id(id) {}
 
+    bool operator==(const Perception&) const = default;
+
     friend std::ostream& operator<<(std::ostream& os, const Perception& obj)
     {
         os << std::setprecision(16);
@@ -69,14 +72,15 @@ struct Pose
 
     Pose(double x = 0, double y = 0, double psi = 0): data{x, y, psi} {}
 
-    Pose& operator+=(Motion& obj)
+    Pose& operator+=(const Motion& obj)
     {
-        data[0] += obj.data[0] * timestamp * ceres::cos(data[2] + obj.data[1] * timestamp * 0.5);
-        data[1] += obj.data[0] * timestamp * ceres::sin(data[2] + obj.data[1] * timestamp * 0.5);
+        data[0] += obj.data[0] * timestamp * cos(data[2] + obj.data[1] * timestamp * 0.5);
+        data[1] += obj.data[0] * timestamp * sin(data[2] + obj.data[1] * timestamp * 0.5);
         data[2] = data[2] + obj.data[1] * timestamp;
 
         return *this;
     }
+    bool operator==(const Pose&) const = default;
 
     friend std::ostream& operator<<(std::ostream& os, const Pose& obj)
     {
