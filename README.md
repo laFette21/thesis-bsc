@@ -24,12 +24,18 @@ SLAM algorithm implementation
 mkdir build
 cd build
 cmake ..
-make
+make -j
 ```
 
 ### Usage
-Executable file is created in the bin folder.
+Executable file is created in the build/src folder.
 
 ```
 ./slam <path/to/input/file> <path/to/output/file>
 ```
+
+### Testing
+Executable files are created in their own folder. You can execute them separately or with the help of ```ctest``` from the build directory.
+
+### Tools
+With the help of ```plot.py``` found in the folder tools you can plot the data generated with the ```slam``` executable.
