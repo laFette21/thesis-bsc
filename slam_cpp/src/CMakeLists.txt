@@ -2,6 +2,7 @@ set(target_name slam)
 
 add_subdirectory(dataenumerator)
 add_subdirectory(graph)
+add_subdirectory(misc)
 
 add_executable(${target_name}
     main.cpp
