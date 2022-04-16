@@ -5,8 +5,8 @@
 
 #include <ceres/ceres.h>
 
-#include "types.h"
-#include "utils.h"
+#include "Types.h"
+#include "Utils.h"
 
 enum DebugOption { POSE, LANDMARK, BOTH };
 

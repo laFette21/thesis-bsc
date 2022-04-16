@@ -1,4 +1,4 @@
-#include "../include/graph.h"
+#include "Graph.h"
 
 int Graph::_last_id = 0;
 
@@ -63,8 +63,8 @@ void Graph::createPose(const MotionPtr& measurement)
 {
     _prev_global_pose += *measurement;
 
-    measurement->data[0] *= TIMESTAMP;
-    measurement->data[1] *= TIMESTAMP * 0.5;
+    measurement->data[0] *= timestamp;
+    measurement->data[1] *= timestamp * 0.5;
     _pose_measurements[_last_id] = measurement;
 
     _poses[_last_id++] = PosePtr(new Pose(_prev_global_pose));
@@ -103,7 +103,8 @@ std::vector<double> Graph::debug(ceres::Problem& problem, const DebugOption& deb
 /**
  * @brief Optimize the graph.
  * 
- * 
+ * The function builds up the optimization problem with the help of Ceres
+ * AutoDiffCostFunctions and solves it.
  * 
  * @param quantity
  * @param report
