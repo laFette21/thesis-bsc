@@ -3,11 +3,10 @@
 
 #include <iomanip>
 
+#include <ceres/ceres.h>
 #include <Eigen/Core>
 
-#include "utils.h"
-
-#define TIMESTAMP 0.05 // 50 ms
+static constexpr double timestamp = 0.05; // 50 ms
 
 struct Landmark
 {
@@ -72,9 +71,9 @@ struct Pose
 
     Pose& operator+=(Motion& obj)
     {
-        data[0] += obj.data[0] * TIMESTAMP * ceres::cos(data[2] + obj.data[1] * TIMESTAMP * 0.5);
-        data[1] += obj.data[0] * TIMESTAMP * ceres::sin(data[2] + obj.data[1] * TIMESTAMP * 0.5);
-        data[2] = data[2] + obj.data[1] * TIMESTAMP;
+        data[0] += obj.data[0] * timestamp * ceres::cos(data[2] + obj.data[1] * timestamp * 0.5);
+        data[1] += obj.data[0] * timestamp * ceres::sin(data[2] + obj.data[1] * timestamp * 0.5);
+        data[2] = data[2] + obj.data[1] * timestamp;
 
         return *this;
     }
