@@ -4,13 +4,13 @@
 
 #include <ceres/ceres.h>
 
-#include "../include/dataenumerator.h"
-#include "../include/graph.h"
+#include "DataEnumerator.h"
+#include "Graph.h"
 
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
 
-static constexpr int section = (int)(5 / TIMESTAMP);
+static constexpr int section = (int)(5 / timestamp);
 static constexpr bool enable_loop_closure = true;
 
 int main(int argc, char const *argv[])
@@ -87,7 +87,7 @@ int main(int argc, char const *argv[])
 
                 output << "###" << std::endl;
 
-                graph.optimize();
+                // graph.optimize();
 
                 output << graph;
                 output << "###" << std::endl;
