@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include "Types.h"
 #include "Utils.h"
 
 TEST_CASE("Test RotationMatrix2D", "[utility]")
@@ -64,18 +65,58 @@ TEST_CASE("Test LandmarkErrorFunction", "[utility]")
 
     }
 }
-
+*/
 TEST_CASE("Test PoseErrorFunction", "[utility]")
 {
-    SECTION("")
+    SECTION("Straight line with constant 1 m/s velocity and 0 rad/s angular velocity")
     {
-        constexpr int size = 100;
-        std::vector<double> measurements(size);
+        constexpr int size = 10;
+        constexpr double measurement[2] = {1, 0};
+        double error = 0;
+        std::vector<Eigen::Vector3d> poses(size, {0, 0, 0});
+        std::vector<Eigen::Vector3d> residuals(size - 1, {0, 0, 0});
 
         for (size_t i = 0; i < size; ++i)
+            poses[i](0) = i;
+
+        for (size_t i = 1; i < size; ++i)
+            PoseErrorFunction()(poses[i - 1].data(), poses[i].data(), measurement, residuals[i - 1].data());
+        
+        for (size_t i = 0; i < size - 1; ++i)
+            error += residuals[i](0) + residuals[i](1) + residuals[i](2);
+
+        REQUIRE(error == Approx(0).margin(1e-12));
+    }
+
+    SECTION("Oval line with constant 10 m/s velocity and variable angular velocity")
+    {
+        double error = 0;
+        std::vector<Motion> measurements{
+            {1, 0},
+            {1, M_PI_2},
+            {1, M_PI_2},
+            {1, 0}
+        };
+        std::vector<Pose> poses{Pose()};
+        std::vector<Eigen::Vector3d> residuals(measurements.size(), {0, 0, 0});
+
+        for (size_t i = 0; i < measurements.size(); ++i)
         {
-            measurements[i] = i * 0.01;
+            Pose pose(poses.back());
+            poses.emplace_back(pose += measurements[i]);
         }
+
+        for (size_t i = 1; i < poses.size(); ++i)
+        {
+            measurements[i - 1].data[0] *= 0.05;
+            measurements[i - 1].data[1] *= 0.025;
+
+            PoseErrorFunction()(poses[i - 1].data, poses[i].data, measurements[i - 1].data, residuals[i - 1].data());
+        }
+
+        for (size_t i = 0; i < residuals.size(); ++i)
+            error += residuals[i](0) + residuals[i](1) + residuals[i](2);
+
+        REQUIRE(error == Approx(0).margin(1e-12));
     }
 }
-*/
