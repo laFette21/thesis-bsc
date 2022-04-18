@@ -22,6 +22,8 @@ struct Data
 
     static std::set<int> getLandmarkIdsFromPerceptions(const std::vector<Perception>&);
 
+    bool operator==(const Data&) const = default;
+
     friend std::ostream& operator<<(std::ostream&, const Data&);
 };
 
