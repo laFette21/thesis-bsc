@@ -2,8 +2,6 @@
 #include "catch.hpp"
 #include "Types.h"
 
-static constexpr double epsilon = 1e-6;
-
 TEST_CASE("Test Landmark", "[types]")
 {
     SECTION("Constructing a Landmark object without arguments")
@@ -92,8 +90,8 @@ TEST_CASE("Test Pose", "[types]")
 
         pose += motion;
 
-        REQUIRE(pose.data[0] - (0.05 * cos(0.025) + 0.05 * cos(0.075)) <= epsilon);
-        REQUIRE(pose.data[1] - (0.05 * sin(0.025) + 0.05 * sin(0.075)) <= epsilon);
-        REQUIRE(pose.data[2] - 0.1 <= epsilon);
+        REQUIRE(pose.data[0] == Approx(0.05 * cos(0.025) + 0.05 * cos(0.075)).margin(1e-12));
+        REQUIRE(pose.data[1] == Approx(0.05 * sin(0.025) + 0.05 * sin(0.075)).margin(1e-12));
+        REQUIRE(pose.data[2] == Approx(0.1).margin(1e-12));
     }
 }
