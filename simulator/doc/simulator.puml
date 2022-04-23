@@ -51,6 +51,10 @@ class Pose
     +get_orientation(): float
 }
 
+Point <-. Pose
+Point <-. Cone
+ConeColor <-. Cone
+
 hide circle
 hide enum methods
 
