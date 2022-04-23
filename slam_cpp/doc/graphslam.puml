@@ -48,13 +48,13 @@ class Pose
     operator<<(ostream&, const Pose&): ostream&
 }
 
-class LandmarkErrorFunction
+class LandmarkErrorFunction<  T  >
 {
     operator()(pose: const T* const, landmark: const T* const, 
     \tmeasurements: const T* const, residuals: T*) const: bool
 }
 
-class PosekErrorFunction
+class PosekErrorFunction<  T  >
 {
     operator()(prev: const T* const, curr: const T* const, 
     \tmeas: const T* const, residuals: T*) const: bool
@@ -128,6 +128,16 @@ end note
 note right of DataEnumerator::current()
     return _data
 end note
+
+Data <-. DataEnumerator
+Motion <-. Data
+Perception <-. Data
+
+DebugOptions <-. Graph
+Landmark <-. Graph
+Motion <-. Graph
+Perception <-. Graph
+Pose <-. Graph
 
 hide circle
 hide enum methods
