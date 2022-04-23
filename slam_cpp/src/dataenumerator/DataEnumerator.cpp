@@ -39,11 +39,12 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
  * 
  * @param filename
  */
-DataEnumerator::DataEnumerator(const std::string& filename)
+DataEnumerator::DataEnumerator(const std::string& filename, double noise)
 {
     _file.open(filename);
     if (_file.fail()) throw std::runtime_error("OPEN ERROR");
     _end = false;
+    _noise = noise;
 }
 
 /**
@@ -86,14 +87,17 @@ void DataEnumerator::next()
 
         motion.data[0] /= count;
         motion.data[1] /= count;
-/*
-        std::random_device rd; 
-        std::mt19937 gen(rd()); 
-        std::normal_distribution<double> normal(0, 2.0);
 
-        motion.data[0] += motion.data[0] * normal(gen);
-        motion.data[1] += motion.data[1] * normal(gen);
-*/
+        if (_noise != 0)
+        {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::normal_distribution<double> normal(0, _noise);
+
+            motion.data[0] += motion.data[0] * normal(gen);
+            motion.data[1] += motion.data[1] * normal(gen);
+        }
+
         while (!_end && type == 'p')
         {
             Perception perception;

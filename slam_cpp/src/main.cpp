@@ -6,6 +6,7 @@
 
 #include "DataEnumerator.h"
 #include "Graph.h"
+#include "argparse.hpp"
 
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
@@ -17,16 +18,32 @@ int main(int argc, char const *argv[])
 {
     auto start = std::chrono::steady_clock::now();
 
-    if (argc < 3)
+    argparse::ArgumentParser program("slam");
+
+    program.add_argument("input_file")
+        .help("path to the input file");
+    program.add_argument("output_file")
+        .help("path where the output file should be saved");
+    program.add_argument("-n", "--noise")
+        .help("use noise on the input data")
+        .default_value(0.0)
+        .scan<'g', double>();
+
+    try
     {
-        std::cerr << "Usage: " << argv[0] << " <path/to/input/file>" << " <path/to/output/file>" << std::endl;
-        return 1;
+        program.parse_args(argc, argv);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << program;
+        std::exit(1);
     }
 
     try
     {
-        std::ofstream output(argv[2]);
-        DataEnumerator enor(argv[1]);
+        std::ofstream output(program.get<std::string>("output_file"));
+        DataEnumerator enor(program.get<std::string>("input_file"), program.get<double>("--noise"));
         Graph graph;
         bool flag = true;
         std::set<int> first_lm_ids;

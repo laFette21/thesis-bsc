@@ -12,6 +12,7 @@ target_include_directories(${target_name}
     PUBLIC
     dataenumerator
     graph
+    misc
 )
 
 target_link_libraries(${target_name}
