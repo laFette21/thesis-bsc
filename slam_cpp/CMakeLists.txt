@@ -9,12 +9,7 @@ add_compile_options(
     -g
 )
 
-list(APPEND
-    CMAKE_MODULE_PATH
-    ${PROJECT_SOURCE_DIR}/cmake_modules
-)
 
-find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 
 enable_testing()
