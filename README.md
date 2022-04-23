@@ -19,11 +19,21 @@ python3 simulator.py [-h] [-d] [-n] [-p] <path/to/input/file>
 SLAM algorithm implementation
 
 ### Compiling
+For normal use:
 
 ```
 mkdir build
 cd build
 cmake ..
+make -j
+```
+
+For checking the code coverage:
+
+```
+mkdir build
+cd build
+cmake -DCOVERAGE=1 ..
 make -j
 ```
 
