@@ -39,3 +39,4 @@ Executable files are created in their own folder. You can execute them separatel
 
 ### Tools
 With the help of ```plot.py``` found in the folder tools you can plot the data generated with the ```slam``` executable.
+With the help of ```coverage.sh``` found in the folder tools you can generate a code coverage report for the dataenumerator and graph libraries and the misc headers.
