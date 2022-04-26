@@ -46,6 +46,7 @@
   - BME Formula Racing Team
 - Konklúzió
   - Leszögezni, hogy miért olyan szuper a gráf alapú SLAM és hogy mi a legnagyobb probléma vele (Adatasszociáció hiánya)
+- Forrásjegyzék
 
 ## Abstract / Témabejelentő
 
@@ -101,9 +102,23 @@ Végül, de nem utolsósorban szeretnék köszönetet mondani a családomnak és
 
 ## Alkalmazás
 
-- Önvezető járművek úgy általában?
+### Önvezető járművek általában
 
-- BME Formula Racing Team
+
+
+### BME Formula Racing Team
+
+A *BME Formula Racing Team* 2007-ben alakult, körülbelül 10-15 közlekedésmérnök hallgatóból, amely azóta kinőtte magát, és már az egyetem szinte összes karáról csatlakoztak hallgatók a csapathoz.
+
+Fennállásuk során már 16 autót építettek, ebből 5 belsőégésű 11 pedig elektromos motorral hajtott. 3 elektromos autót később önvezetővé alakítottak át. A csapat mérnökei és menedzserei különböző területeken dolgoznak ugyanazért a célért, a leendő mérnökök tudásának gyarapításáért és a minél jobb eredmények eléréséért, valamint hogy megteremtsék a magas szintű anyagi, szervezeti és tárgyi feltételeket.
+
+Eddig több mint 300 hallgató tevékenykedett a tervezés, a beszerzés, a gyártás, a menedzsment, a logisztika és a gazdasági ügyek intézése területén. Jelenleg több mint 60 csapattaggal működnek, akik közt található gépész-, közlekedés-, villamosmérnök és közgazdaságtan hallgató is.
+
+2011-ben mutatkozott be a Formula Student mezőnyében a BME FRT - és Magyarország - első elektromos hajtású Formula Student autója, a 2021-es évben pedig már a tizedik ilyen autójuk készült el.
+
+Szerencsésnek mondhatom magam, hogy 2021 októberétől én is a csapat tagja lehetek, és első kézből tapasztalhatom meg, hogy milyen komplex feladatokkal kell szembesülnie egy autonóm rendszerekkel foglalkozó informatikusnak a csapat önvezető csoportjának tagjaként.
+
+Mondhatjuk, hogy a dolgozatom termékgazdájának szerepét a csapat töltötte be, ugyanis ebben az évben a jelenleg is az autón működő részecskeszűrős SLAM mellé készült el a gráf alapú implementációm, hogy az előbb említett algoritmussal fúzionálva pontosabb működést érhessünk el.
 
 ## Konklúzió
 
