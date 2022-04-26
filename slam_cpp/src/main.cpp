@@ -6,28 +6,38 @@
 
 #include "DataEnumerator.h"
 #include "Graph.h"
+#include "matplotlibcpp.h"
 #include "argparse.hpp"
 
 #define NORMAL_MODE
 #ifdef NORMAL_MODE
 
 static constexpr int section = (int)(5 / timestamp);
-static constexpr bool enable_loop_closure = true;
 
 int main(int argc, char const *argv[])
 {
-    auto start = std::chrono::steady_clock::now();
-
     argparse::ArgumentParser program("slam");
 
     program.add_argument("input_file")
         .help("path to the input file");
     program.add_argument("output_file")
         .help("path where the output file should be saved");
+    program.add_argument("-l", "--loop_closure")
+        .help("enable loop closing for the optimization")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("-n", "--noise")
         .help("use noise on the input data")
         .default_value(0.0)
         .scan<'g', double>();
+    program.add_argument("-p", "--plot")
+        .help("plot the results using matplotlib")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("-s", "--segmentation")
+        .help("generate the output file with segmentation")
+        .default_value(false)
+        .implicit_value(true);
 
     try
     {
@@ -45,6 +55,7 @@ int main(int argc, char const *argv[])
         std::ofstream output(program.get<std::string>("output_file"));
         DataEnumerator enor(program.get<std::string>("input_file"), program.get<double>("--noise"));
         Graph graph;
+        bool enable_loop_closure = program.get<bool>("--loop_closure");
         bool flag = true;
         std::set<int> first_lm_ids;
         int i = 1;
@@ -88,9 +99,10 @@ int main(int argc, char const *argv[])
 
             std::shared_ptr<Motion> motion(new Motion(enor.current().motion));
             graph.createPose(motion);
-/*
-            if (i % section == 0)
+
+            if (program.get<bool>("--segmentation") && i % section == 0)
             {
+                // TODO: Mit mentsek végül ki fájlba? Részeredmény kell (eredeti, optimalizált)?
                 output << "===" << std::endl;
                 output << graph;
                 output << "###" << std::endl;
@@ -115,8 +127,28 @@ int main(int argc, char const *argv[])
                 {
                     output << *lm.second << std::endl;
                 }
+
+                if (program.get<bool>("--plot"))
+                {
+                    matplotlibcpp::xlabel("x[m]");
+                    matplotlibcpp::ylabel("y[m]");
+                    matplotlibcpp::title("Landmarks");
+                    matplotlibcpp::axis("equal");
+                    lms = graph.getUniqueLandmarks();
+
+                    std::vector<double> x_pre, y_pre;
+                    for (const auto& lm : lms)
+                    {
+                        x_pre.push_back(lm.second->data[0]);
+                        y_pre.push_back(lm.second->data[1]);
+                    }
+
+                    matplotlibcpp::named_plot("landmark before optimization", x_pre, y_pre, "g.");
+                    matplotlibcpp::legend();
+                    matplotlibcpp::show();
+                }
             }
-*/
+
             i++;
             enor.next();
         }
@@ -134,7 +166,7 @@ int main(int argc, char const *argv[])
 
         output << "###" << std::endl;
 
-        graph.optimize(-1, true);
+        // graph.optimize(-1, true);
 
         output << graph;
         output << "###" << std::endl;
@@ -150,17 +182,58 @@ int main(int argc, char const *argv[])
         output << "END" << std::endl;
 
         output.close();
+
+        if (program.get<bool>("--plot"))
+        {
+            matplotlibcpp::xlabel("x[m]");
+            matplotlibcpp::ylabel("y[m]");
+            matplotlibcpp::title("Landmarks");
+            matplotlibcpp::axis("equal");
+            lms = graph.getUniqueLandmarks();
+
+            std::vector<double> x_pre, y_pre;
+            for (const auto& lm : lms)
+            {
+                x_pre.push_back(lm.second->data[0]);
+                y_pre.push_back(lm.second->data[1]);
+            }
+
+            graph.optimize(-1, true);
+
+            lms = graph.getUniqueLandmarks();
+
+            std::vector<double> x_post, y_post;
+
+            for (const auto& lm : lms)
+            {
+                x_post.push_back(lm.second->data[0]);
+                y_post.push_back(lm.second->data[1]);
+            }
+
+            std::vector<std::vector<double>> vec_x, vec_y;
+
+            for (size_t i = 0; i < x_post.size(); ++i)
+            {
+                vec_x.push_back({x_pre[i], x_post[i]});
+                vec_y.push_back({y_pre[i], y_post[i]});
+            }
+
+            for (size_t i = 0; i < vec_x.size(); ++i)
+            {
+                matplotlibcpp::plot(vec_x[i], vec_y[i], "tab:gray");
+            }
+
+            matplotlibcpp::named_plot("landmark before optimization", x_pre, y_pre, "g.");
+            matplotlibcpp::named_plot("landmark after optimization", x_post, y_post, "r.");
+
+            matplotlibcpp::legend();
+            matplotlibcpp::show();
+        }
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
-
-    auto end = std::chrono::steady_clock::now();
-
-    std::cerr << "Elapsed time in milliseconds: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << " ms" << std::endl;
 
     return 0;
 }
