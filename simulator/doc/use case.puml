@@ -1,0 +1,27 @@
+@startuml Use Case
+
+skinparam Monochrome true
+
+actor :Felhasználó: as user
+
+usecase (Alkalmazás futtatása) as run_application
+usecase (Input fájl betöltése) as process_input
+usecase (Output fájl generálása) as make_output
+usecase (Vizualizálás) as plot
+usecase (Érzékelés kapcsoló használata) as perception
+usecase (Zajosítás kapcsoló használata) as make_some_noise
+usecase (Irányok kapcsoló használata) as directions
+
+user -right- run_application
+user -right- perception
+user -right- make_some_noise
+user -right- directions
+
+process_input <.left. run_application : <<include>>
+make_output <.up. run_application : <<include>>
+plot <.down. run_application : <<include>>
+perception .up.> run_application : <<extend>>
+make_some_noise .down.> run_application : <<extend>>
+directions .up.> run_application : <<extend>>
+
+@enduml

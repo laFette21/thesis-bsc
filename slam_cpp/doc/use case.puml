@@ -1,0 +1,28 @@
+@startuml Use Case
+
+skinparam Monochrome true
+
+actor :Felhasználó: as user
+
+usecase (Alkalmazás futtatása) as run_application
+usecase (Input fájl betöltése) as process_input
+usecase (Output fájl generálása) as make_output
+usecase (Szegmentálás kapcsoló használata) as segmentation
+usecase (Zajosítás kapcsoló használata) as make_some_noise
+usecase (Vizualizálás kapcsoló használata) as plot
+usecase (Hurokzárás kapcsoló használata) as loop_closure
+
+user -right- run_application
+user -right- segmentation
+user -right- make_some_noise
+user -right- plot
+user -right- loop_closure
+
+segmentation .up.> run_application : <<extend>>
+process_input <.left. run_application : <<include>>
+make_output <.up. run_application : <<include>>
+make_some_noise .down.> run_application : <<extend>>
+plot .down.> run_application : <<extend>>
+loop_closure .up.> run_application : <<extend>>
+
+@enduml
