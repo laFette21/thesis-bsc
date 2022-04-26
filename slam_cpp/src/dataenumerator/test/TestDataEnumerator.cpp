@@ -65,44 +65,91 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
         REQUIRE(enor.end());
     }
 
-    SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
+    SECTION("Noise is 0")
     {
-        DataEnumerator enor("input1.txt", 0);
+        SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
+        {
+            DataEnumerator enor("input1.txt", 0);
 
-        REQUIRE_FALSE(enor.end()); 
+            REQUIRE_FALSE(enor.end()); 
 
-        enor.first();
+            enor.first();
 
-        REQUIRE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
-        REQUIRE(enor.end());
+            REQUIRE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE(enor.end());
+        }
+
+        SECTION("Reading 2 Data(1 Motion, 2 Perceptions) from a non-empty file")
+        {
+            DataEnumerator enor("input2.txt", 0);
+
+            REQUIRE_FALSE(enor.end()); 
+
+            enor.first();
+
+            REQUIRE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE_FALSE(enor.end());
+
+            enor.next();
+
+            REQUIRE(enor.current() == Data(Motion(5.5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE(enor.end());
+        }
+
+        SECTION("Reading only Motion data from a non-empty file")
+        {
+            DataEnumerator enor("input3.txt", 0);
+
+            REQUIRE_FALSE(enor.end()); 
+
+            enor.first();
+
+            REQUIRE(enor.current() == Data(Motion(4.8, 0.1), {}));
+            REQUIRE(enor.end());
+        }
     }
 
-    SECTION("Reading 2 Data(1 Motion, 2 Perceptions) from a non-empty file")
+    SECTION("Noise is non-zero")
     {
-        DataEnumerator enor("input2.txt", 0);
+        SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
+        {
+            DataEnumerator enor("input1.txt", 0.1);
 
-        REQUIRE_FALSE(enor.end()); 
+            REQUIRE_FALSE(enor.end()); 
 
-        enor.first();
+            enor.first();
 
-        REQUIRE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
-        REQUIRE_FALSE(enor.end());
+            REQUIRE_FALSE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE(enor.end());
+        }
 
-        enor.next();
+        SECTION("Reading 2 Data(1 Motion, 2 Perceptions) from a non-empty file")
+        {
+            DataEnumerator enor("input2.txt", 0.1);
 
-        REQUIRE(enor.current() == Data(Motion(5.5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
-        REQUIRE(enor.end());
-    }
+            REQUIRE_FALSE(enor.end()); 
 
-    SECTION("Reading only Motion data from a non-empty file")
-    {
-        DataEnumerator enor("input3.txt", 0);
+            enor.first();
 
-        REQUIRE_FALSE(enor.end()); 
+            REQUIRE_FALSE(enor.current() == Data(Motion(5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE_FALSE(enor.end());
 
-        enor.first();
+            enor.next();
 
-        REQUIRE(enor.current() == Data(Motion(4.8, 0.1), {}));
-        REQUIRE(enor.end());
+            REQUIRE_FALSE(enor.current() == Data(Motion(5.5, 0.1), {Perception(0, 0, 0, 1, 5, 2), Perception(1, 0, 0, 2, 5, -2)}));
+            REQUIRE(enor.end());
+        }
+
+        SECTION("Reading only Motion data from a non-empty file")
+        {
+            DataEnumerator enor("input3.txt", 0.1);
+
+            REQUIRE_FALSE(enor.end()); 
+
+            enor.first();
+
+            REQUIRE_FALSE(enor.current() == Data(Motion(4.8, 0.1), {}));
+            REQUIRE(enor.end());
+        }
     }
 }
