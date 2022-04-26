@@ -159,33 +159,9 @@ bool Graph::optimize(int quantity, bool report)
 
     // Set anchor for first pose
     problem.SetParameterBlockConstant(start->second->data);
-/*
-    auto residuals = debug(problem, DebugOption::BOTH);
-    double total_cost = 0;
 
-    for (auto& residual : residuals)
-    {
-        // std::cerr << residual << std::endl;
-        total_cost += residual * residual;
-    }
-
-    std::cout << "Total cost before optimization: " << total_cost / 2 << std::endl;
-
-    // return false;
-*/
     Solve(_options, &problem, &summary);
-/*
-    residuals = debug(problem, DebugOption::BOTH);
-    total_cost = 0;
 
-    for (auto& residual : residuals)
-    {
-        // std::cerr << residual << std::endl;
-        total_cost += residual * residual;
-    }
-
-    std::cout << "Total cost after optimization: " << total_cost / 2 << std::endl;
-*/
     if (report)
         std::cerr << summary.FullReport() << std::endl;
 
