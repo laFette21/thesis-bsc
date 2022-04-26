@@ -17,6 +17,7 @@ struct Landmark
 
     bool operator==(const Landmark&) const = default;
 
+    // GCOVR_EXCL_START
     friend std::ostream& operator<<(std::ostream& os, const Landmark& obj)
     {
         os << std::setprecision(16);
@@ -25,6 +26,7 @@ struct Landmark
 
         return os;
     }
+    // GCOVR_EXCL_STOP
 };
 
 struct Motion
@@ -35,6 +37,7 @@ struct Motion
 
     bool operator==(const Motion&) const = default;
 
+    // GCOVR_EXCL_START
     friend std::ostream& operator<<(std::ostream& os, const Motion& obj)
     {
         os << std::setprecision(16);
@@ -42,6 +45,7 @@ struct Motion
 
         return os;
     }
+    // GCOVR_EXCL_STOP
 };
 
 struct Perception
@@ -56,6 +60,7 @@ struct Perception
 
     bool operator==(const Perception&) const = default;
 
+    // GCOVR_EXCL_START
     friend std::ostream& operator<<(std::ostream& os, const Perception& obj)
     {
         os << std::setprecision(16);
@@ -64,6 +69,7 @@ struct Perception
 
         return os;
     }
+    // GCOVR_EXCL_STOP
 };
 
 struct Pose
@@ -82,6 +88,7 @@ struct Pose
     }
     bool operator==(const Pose&) const = default;
 
+    // GCOVR_EXCL_START
     friend std::ostream& operator<<(std::ostream& os, const Pose& obj)
     {
         os << std::setprecision(16);
@@ -89,6 +96,7 @@ struct Pose
 
         return os;
     }
+    // GCOVR_EXCL_STOP
 };
 
 #endif // TYPES_H

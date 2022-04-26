@@ -23,6 +23,7 @@ std::set<int> Data::getLandmarkIdsFromPerceptions(const std::vector<Perception>&
  * @param obj
  * @return std::ostream&
  */
+// GCOVR_EXCL_START
 std::ostream& operator<<(std::ostream& os, const Data& obj)
 {
     os << std::setprecision(16);
@@ -33,6 +34,7 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
 
     return os;
 }
+// GCOVR_EXCL_STOP
 
 /**
  * @brief Construct a new DataEnumerator object.

@@ -197,6 +197,7 @@ bool Graph::optimize(int quantity, bool report)
  * 
  * @return std::ostream&
  */
+// GCOVR_EXCL_START
 std::ostream& operator<<(std::ostream& os, const Graph& graph)
 {
     for (auto& pose : graph._poses)
@@ -206,3 +207,4 @@ std::ostream& operator<<(std::ostream& os, const Graph& graph)
 
     return os;
 }
+// GCOVR_EXCL_STOP
