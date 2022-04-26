@@ -1,3 +1,4 @@
-
+.vscode
 .DS_Store
+slam_cpp/build
 *.pyc
