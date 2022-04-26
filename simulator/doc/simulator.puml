@@ -2,6 +2,7 @@
 
 skinparam Monochrome true
 skinparam ClassAttributeIconSize 0
+skinparam Linetype ortho
 
 enum ConeColor
 {
