@@ -1,9 +1,10 @@
 set(target_name test_graph)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src/misc)
 include_directories(..)
 
 add_executable(${target_name}
+    ../Graph.cpp
     TestGraph.cpp
 )
 

@@ -1,23 +1,17 @@
 #define CATCH_CONFIG_MAIN
+
 #include "catch.hpp"
-#include "Utils.h"
+#include "Graph.h"
 
-TEST_CASE("Test RotationMatrix2D", "[utility]")
+TEST_CASE("Test Graph", "[graph]")
 {
-    SECTION("Identity matrix with theta = 0")
+    SECTION("Constructing a Graph object")
     {
-        REQUIRE(Eigen::Matrix2d::Identity() == RotationMatrix2D<double>(0));
-    }
+        const Graph graph;
 
-    SECTION("Matrix with theta = 1")
-    {
-        Eigen::Matrix2d matrix;
-
-        const double sin_theta = sin(1);
-        const double cos_theta = cos(1);
-
-        matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
-
-        REQUIRE(matrix == RotationMatrix2D<double>(1));
+        REQUIRE(graph.getLastId() == 1);
+        REQUIRE(graph.getPoses().size() == 1);
+        REQUIRE(graph.getUniqueLandmarks().size() == 0);
+        REQUIRE(*graph.getPoses().begin()->second == Pose());
     }
 }

@@ -24,6 +24,8 @@ public:
     bool optimize(int = -1, bool = false);
     std::vector<double> debug(ceres::Problem&, const DebugOption&);
     std::map<int, LandmarkPtr> getUniqueLandmarks() const { return _unique_landmarks; }
+    std::map<int, PosePtr> getPoses() const { return _poses; }
+    int getLastId() const { return _last_id; }
 
     friend std::ostream& operator<<(std::ostream&, const Graph&);
 
