@@ -211,9 +211,9 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Perception simulator for driverless cars.', allow_abbrev=False)
-    parser.add_argument('path', type=str, nargs=1, help='path to the file with sparse centerline data')
+    parser.add_argument('input_file', type=str, nargs=1, help='path to the file with sparse centerline data')
     parser.add_argument('-d', '--directions', action='store_true', default=False, required=False, help='show the directional vectors of the car')
     parser.add_argument('-n', '--noisy', action='store_true', default=False, required=False, help='use noise for the output data')
     parser.add_argument('-p', '--perception', action='store_true', default=False, required=False, help='show the vectors to the cones the car is currently detecting')
     args = parser.parse_args()
-    main(path=args.path[0], directions=args.directions, noisy=args.noisy, perception=args.perception)
+    main(path=args.input_file[0], directions=args.directions, noisy=args.noisy, perception=args.perception)
