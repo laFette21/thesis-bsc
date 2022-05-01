@@ -23,19 +23,19 @@ int main(int argc, char const *argv[])
     program.add_argument("output_file")
         .help("path where the output file should be saved");
     program.add_argument("-l", "--loop_closure")
-        .help("enable loop closing for the optimization")
+        .help("enables loop closing for the optimization")
         .default_value(false)
         .implicit_value(true);
     program.add_argument("-n", "--noise")
-        .help("use noise on the input data")
+        .help("uses noise on the input data")
         .default_value(0.0)
         .scan<'g', double>();
     program.add_argument("-p", "--plot")
-        .help("plot the results using matplotlib")
+        .help("plots the built map and the poses using matplotlib")
         .default_value(false)
         .implicit_value(true);
     program.add_argument("-s", "--segmentation")
-        .help("generate the output file with segmentation")
+        .help("enables the segmentation of the data")
         .default_value(false)
         .implicit_value(true);
 
