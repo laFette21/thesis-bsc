@@ -36,9 +36,10 @@ public:
     void first();
     void next();
     bool end() const { return _end; }
-    bool read_next_not_empty_line();
 
 private:
+    bool read_next_not_empty_line();
+
     std::ifstream _file;
     std::stringstream _ss;
     Data _data;
