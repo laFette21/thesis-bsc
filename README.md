@@ -6,14 +6,14 @@ Perception simulator for driverless cars
 ### Usage
 
 ```
-python3 simulator.py [-h] [-d] [-n] [-p] <path/to/input/file>
+python3 simulator.py [-h] [-d] [-n] [-p] input_file
 ```
 
 #### Optional arguments
-- -h, --help        - show the help message and exit
-- -d, --directions  - show the directional vectors of the car
-- -n, --noisy       - use noise for the output data
-- -p, --perception  - show the vectors to the cones the car is currently detecting
+- -h, --help        - shows help message and exit
+- -d, --directions  - shows directional vectors of the car
+- -n, --noisy       - uses noise for the output data
+- -p, --perception  - shows vectors to the cones the car is currently detecting
 
 ## SLAM
 SLAM algorithm implementation
@@ -41,8 +41,16 @@ make -j
 Executable file is created in the build/src folder.
 
 ```
-./slam <path/to/input/file> <path/to/output/file>
+./slam [-h] [-v] [-l] [-n] [-p] [-s] input_file output_file
 ```
+
+#### Optional arguments
+- -h, --help          - shows help message and exits
+- -v, --version       - prints version information and exits
+- -l, --loop_closure  - enables loop closing for the optimization
+- -n, --noise         - uses noise on the input data
+- -p, --plot          - plots the results using matplotlib
+- -s, --segmentation  - enables the segmentation of the data
 
 ### Testing
 Executable files are created in their own folder. You can execute them separately or with the help of ```ctest``` from the build directory.
