@@ -1,13 +1,12 @@
 #include "Graph.h"
 
-int Graph::_last_id = 0;
-
 /**
  * @brief Construct a new Graph object
  * 
  */
 Graph::Graph()
 {
+    _last_id = 0;
     _poses[_last_id++] = PosePtr(new Pose);
     _options.max_num_iterations = 500;
     _options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;

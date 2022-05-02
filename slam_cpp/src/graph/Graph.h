@@ -40,7 +40,7 @@ private:
     std::map<int, std::shared_ptr<std::vector<PerceptionPtr>>> _landmark_measurements;
     std::vector<ceres::ResidualBlockId> _pose_residual_ids;
     std::vector<ceres::ResidualBlockId> _lm_residual_ids;
-    static int _last_id;
+    int _last_id;
 };
 
 #endif // GRAPH_H
