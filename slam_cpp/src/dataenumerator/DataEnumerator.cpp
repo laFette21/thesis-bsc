@@ -55,7 +55,7 @@ DataEnumerator::DataEnumerator(const std::string& filename, double noise)
  */
 void DataEnumerator::first()
 {
-    _end = !read_next_not_empty_line();
+    _end = !readNextNotEmptyLine();
     next();
 }
 
@@ -83,7 +83,7 @@ void DataEnumerator::next()
             motion.data[1] += ang_vel;
             count += 1;
 
-            _end = !read_next_not_empty_line();
+            _end = !readNextNotEmptyLine();
             _ss >> type;
         }
 
@@ -92,8 +92,9 @@ void DataEnumerator::next()
 
         if (_noise != 0)
         {
-            std::random_device rd;
-            std::mt19937 gen(rd());
+            // std::random_device rd;
+            std::mt19937 gen;
+            gen.seed(1000000);
             std::normal_distribution<double> normal(0, _noise);
 
             motion.data[0] += motion.data[0] * normal(gen);
@@ -108,7 +109,7 @@ void DataEnumerator::next()
                 >> perception.id >> perception.ground_truth[0] >> perception.ground_truth[1];
             perceptions.push_back(perception);
 
-            _end = !read_next_not_empty_line();
+            _end = !readNextNotEmptyLine();
             _ss >> type;
         }
 
@@ -127,7 +128,7 @@ void DataEnumerator::next()
  * 
  * @return true if process was successful else false.
  */
-bool DataEnumerator::read_next_not_empty_line()
+bool DataEnumerator::readNextNotEmptyLine()
 {
     std::string line;
     _ss.clear();

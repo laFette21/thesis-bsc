@@ -38,7 +38,7 @@ public:
     bool end() const { return _end; }
 
 private:
-    bool read_next_not_empty_line();
+    bool readNextNotEmptyLine();
 
     std::ifstream _file;
     std::stringstream _ss;
