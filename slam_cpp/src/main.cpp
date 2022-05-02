@@ -55,6 +55,8 @@ int main(int argc, char const *argv[])
         std::ofstream output(program.get<std::string>("output_file"));
         DataEnumerator enor(program.get<std::string>("input_file"), program.get<double>("--noise"));
         Graph graph;
+        std::vector<double> x_pre, y_pre, x_post, y_post;
+        std::vector<std::vector<double>> vec_x, vec_y;
         bool enable_loop_closure = program.get<bool>("--loop_closure");
         bool flag = true;
         std::set<int> first_lm_ids;
@@ -102,7 +104,6 @@ int main(int argc, char const *argv[])
 
             if (program.get<bool>("--segmentation") && i % section == 0)
             {
-                // TODO: Mit mentsek végül ki fájlba? Részeredmény kell (eredeti, optimalizált)?
                 output << "===" << std::endl;
                 output << graph;
                 output << "###" << std::endl;
@@ -116,7 +117,21 @@ int main(int argc, char const *argv[])
 
                 output << "###" << std::endl;
 
-                // graph.optimize();
+                if (program.get<bool>("--plot"))
+                {
+                    matplotlibcpp::xlabel("x[m]");
+                    matplotlibcpp::ylabel("y[m]");
+                    matplotlibcpp::title("Landmarks");
+                    matplotlibcpp::axis("equal");
+
+                    for (const auto& lm : lms)
+                    {
+                        x_pre.push_back(lm.second->data[0]);
+                        y_pre.push_back(lm.second->data[1]);
+                    }
+                }
+
+                graph.optimize();
 
                 output << graph;
                 output << "###" << std::endl;
@@ -130,24 +145,37 @@ int main(int argc, char const *argv[])
 
                 if (program.get<bool>("--plot"))
                 {
-                    matplotlibcpp::xlabel("x[m]");
-                    matplotlibcpp::ylabel("y[m]");
-                    matplotlibcpp::title("Landmarks");
-                    matplotlibcpp::axis("equal");
-                    lms = graph.getUniqueLandmarks();
-
-                    std::vector<double> x_pre, y_pre;
                     for (const auto& lm : lms)
                     {
-                        x_pre.push_back(lm.second->data[0]);
-                        y_pre.push_back(lm.second->data[1]);
+                        x_post.push_back(lm.second->data[0]);
+                        y_post.push_back(lm.second->data[1]);
+                    }
+
+                    for (size_t i = 0; i < x_post.size(); ++i)
+                    {
+                        vec_x.push_back({x_pre[i], x_post[i]});
+                        vec_y.push_back({y_pre[i], y_post[i]});
+                    }
+
+                    for (size_t i = 0; i < vec_x.size(); ++i)
+                    {
+                        matplotlibcpp::plot(vec_x[i], vec_y[i], "tab:gray");
                     }
 
                     matplotlibcpp::named_plot("landmark before optimization", x_pre, y_pre, "g.");
+                    matplotlibcpp::named_plot("landmark after optimization", x_post, y_post, "r.");
+
                     matplotlibcpp::legend();
                     matplotlibcpp::show();
                 }
             }
+
+            x_pre.clear();
+            y_pre.clear();
+            x_post.clear();
+            y_post.clear();
+            vec_x.clear();
+            vec_y.clear();
 
             i++;
             enor.next();
@@ -166,7 +194,21 @@ int main(int argc, char const *argv[])
 
         output << "###" << std::endl;
 
-        // graph.optimize(-1, true);
+        if (program.get<bool>("--plot"))
+        {
+            matplotlibcpp::xlabel("x[m]");
+            matplotlibcpp::ylabel("y[m]");
+            matplotlibcpp::title("Landmarks");
+            matplotlibcpp::axis("equal");
+
+            for (const auto& lm : lms)
+            {
+                x_pre.push_back(lm.second->data[0]);
+                y_pre.push_back(lm.second->data[1]);
+            }
+        }
+
+        graph.optimize(-1, true);
 
         output << graph;
         output << "###" << std::endl;
@@ -185,32 +227,11 @@ int main(int argc, char const *argv[])
 
         if (program.get<bool>("--plot"))
         {
-            matplotlibcpp::xlabel("x[m]");
-            matplotlibcpp::ylabel("y[m]");
-            matplotlibcpp::title("Landmarks");
-            matplotlibcpp::axis("equal");
-            lms = graph.getUniqueLandmarks();
-
-            std::vector<double> x_pre, y_pre;
-            for (const auto& lm : lms)
-            {
-                x_pre.push_back(lm.second->data[0]);
-                y_pre.push_back(lm.second->data[1]);
-            }
-
-            graph.optimize(-1, true);
-
-            lms = graph.getUniqueLandmarks();
-
-            std::vector<double> x_post, y_post;
-
             for (const auto& lm : lms)
             {
                 x_post.push_back(lm.second->data[0]);
                 y_post.push_back(lm.second->data[1]);
             }
-
-            std::vector<std::vector<double>> vec_x, vec_y;
 
             for (size_t i = 0; i < x_post.size(); ++i)
             {
