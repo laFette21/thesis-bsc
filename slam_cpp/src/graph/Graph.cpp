@@ -94,15 +94,13 @@ std::vector<double> Graph::debug(ceres::Problem& problem, const DebugOption& deb
 
     problem.Evaluate(options, &total_cost, &evaluated_residuals, nullptr, nullptr);
 
-    // TODO: Pontosan mi a residual itt? Residual tömb, vagy valami normált érték?
-
     return evaluated_residuals;
 }
 
 /**
  * @brief Optimize the graph.
  * 
- * The function builds up the optimization problem with the help of Ceres
+ * The method builds up the optimization problem with the help of Ceres
  * AutoDiffCostFunctions and solves it.
  * 
  * @param quantity
@@ -136,14 +134,13 @@ bool Graph::optimize(int quantity, bool report)
         problem.SetParameterBlockConstant(_pose_measurements[curr->first]->data);
         _pose_residual_ids.push_back(pose_residual_id);
 
-        auto measurements = *_landmark_measurements[curr->first];
+        auto measurements = _landmark_measurements[curr->first];
 
-        // TODO: optimize performance?
         // sorfolytonos adattárolás (vector) -> cache friendly
         for (auto& lm : _landmarks[curr->first])
         {
             auto is_id = [lm](PerceptionPtr obj){ return obj->id == lm->id; };
-            auto meas = std::find_if(measurements.begin(), measurements.end(), is_id);
+            auto meas = std::find_if(measurements->begin(), measurements->end(), is_id);
 
             ceres::ResidualBlockId lm_residual_id = problem.AddResidualBlock(
                 _landmark_cost_function, nullptr, prev->second->data, lm->data, meas->get()->data
@@ -168,7 +165,7 @@ bool Graph::optimize(int quantity, bool report)
 }
 
 /**
- * @brief Print the Pose objects to the stream.
+ * @brief Print the Pose objects from the Graph to the stream.
  * 
  * @return std::ostream&
  */

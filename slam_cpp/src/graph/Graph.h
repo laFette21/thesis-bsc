@@ -22,7 +22,6 @@ public:
     void createLandmark(const std::shared_ptr<std::vector<PerceptionPtr>>&);
     void createPose(const MotionPtr&);
     bool optimize(int = -1, bool = false);
-    std::vector<double> debug(ceres::Problem&, const DebugOption&);
     std::map<int, LandmarkPtr> getUniqueLandmarks() const { return _unique_landmarks; }
     std::map<int, PosePtr> getPoses() const { return _poses; }
     int getLastId() const { return _last_id; }
@@ -30,6 +29,8 @@ public:
     friend std::ostream& operator<<(std::ostream&, const Graph&);
 
 private:
+    std::vector<double> debug(ceres::Problem&, const DebugOption&);
+
     ceres::CostFunction *_pose_cost_function, *_landmark_cost_function;
     ceres::Solver::Options _options;
     std::map<int, PosePtr> _poses;
