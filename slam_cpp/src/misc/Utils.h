@@ -19,11 +19,11 @@ Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
 struct LandmarkErrorFunction
 {
     template <typename T>
-    bool operator()(const T* const pose, const T* const landmark, const T* const measurement, T* residual) const
+    bool operator()(const T* const pose, const T* const landmark, const T* const meas, T* residual) const
     {
         Eigen::Matrix2<T> rotation = RotationMatrix2D<T>(pose[2]);
-        T lm_meas_x = measurement[0] * ceres::cos(measurement[1]);
-        T lm_meas_y = measurement[0] * ceres::sin(measurement[1]);
+        T lm_meas_x = meas[0] * ceres::cos(meas[1]);
+        T lm_meas_y = meas[0] * ceres::sin(meas[1]);
 
         Eigen::Vector2<T> temp;
         temp(0) = landmark[0] - pose[0];
