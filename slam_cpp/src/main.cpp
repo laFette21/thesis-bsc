@@ -55,8 +55,9 @@ int main(int argc, char const *argv[])
         std::ofstream output(program.get<std::string>("output_file"));
         DataEnumerator enor(program.get<std::string>("input_file"), program.get<double>("--noise"));
         Graph graph;
-        std::vector<double> x_pre, y_pre, x_post, y_post;
-        std::vector<std::vector<double>> vec_x, vec_y;
+        std::vector<double> lm_x_gt, lm_y_gt, lm_x_pre, lm_y_pre, lm_x_post, lm_y_post;
+        std::vector<double> p_x_pre, p_y_pre, p_x_post, p_y_post;
+        std::vector<std::vector<double>> lm_vec_x, lm_vec_y;
         bool enable_loop_closure = program.get<bool>("--loop_closure");
         bool flag = true;
         std::set<int> first_lm_ids;
@@ -121,13 +122,13 @@ int main(int argc, char const *argv[])
                 {
                     matplotlibcpp::xlabel("x[m]");
                     matplotlibcpp::ylabel("y[m]");
-                    matplotlibcpp::title("Landmarks");
+                    matplotlibcpp::title("Map");
                     matplotlibcpp::axis("equal");
 
                     for (const auto& lm : lms)
                     {
-                        x_pre.push_back(lm.second->data[0]);
-                        y_pre.push_back(lm.second->data[1]);
+                        lm_x_pre.push_back(lm.second->data[0]);
+                        lm_y_pre.push_back(lm.second->data[1]);
                     }
                 }
 
@@ -147,35 +148,35 @@ int main(int argc, char const *argv[])
                 {
                     for (const auto& lm : lms)
                     {
-                        x_post.push_back(lm.second->data[0]);
-                        y_post.push_back(lm.second->data[1]);
+                        lm_x_post.push_back(lm.second->data[0]);
+                        lm_y_post.push_back(lm.second->data[1]);
                     }
 
-                    for (size_t i = 0; i < x_post.size(); ++i)
+                    for (size_t i = 0; i < lm_x_post.size(); ++i)
                     {
-                        vec_x.push_back({x_pre[i], x_post[i]});
-                        vec_y.push_back({y_pre[i], y_post[i]});
+                        lm_vec_x.push_back({lm_x_pre[i], lm_x_post[i]});
+                        lm_vec_y.push_back({lm_y_pre[i], lm_y_post[i]});
                     }
 
-                    for (size_t i = 0; i < vec_x.size(); ++i)
+                    for (size_t i = 0; i < lm_vec_x.size(); ++i)
                     {
-                        matplotlibcpp::plot(vec_x[i], vec_y[i], "tab:gray");
+                        matplotlibcpp::plot(lm_vec_x[i], lm_vec_y[i], "tab:gray");
                     }
 
-                    matplotlibcpp::named_plot("landmark before optimization", x_pre, y_pre, "g.");
-                    matplotlibcpp::named_plot("landmark after optimization", x_post, y_post, "r.");
+                    matplotlibcpp::named_plot("landmark before optimization", lm_x_pre, lm_y_pre, "g.");
+                    matplotlibcpp::named_plot("landmark after optimization", lm_x_post, lm_y_post, "r.");
 
                     matplotlibcpp::legend();
                     matplotlibcpp::show();
                 }
             }
 
-            x_pre.clear();
-            y_pre.clear();
-            x_post.clear();
-            y_post.clear();
-            vec_x.clear();
-            vec_y.clear();
+            lm_x_pre.clear();
+            lm_y_pre.clear();
+            lm_x_post.clear();
+            lm_y_post.clear();
+            lm_vec_x.clear();
+            lm_vec_y.clear();
 
             i++;
             enor.next();
@@ -198,13 +199,23 @@ int main(int argc, char const *argv[])
         {
             matplotlibcpp::xlabel("x[m]");
             matplotlibcpp::ylabel("y[m]");
-            matplotlibcpp::title("Landmarks");
+            matplotlibcpp::title("Map and trajectory");
             matplotlibcpp::axis("equal");
+
+            auto poses = graph.getPoses();
+
+            for (const auto& pose : poses)
+            {
+                p_x_pre.push_back(pose.second->data[0]);
+                p_y_pre.push_back(pose.second->data[1]);
+            }
 
             for (const auto& lm : lms)
             {
-                x_pre.push_back(lm.second->data[0]);
-                y_pre.push_back(lm.second->data[1]);
+                lm_x_gt.push_back(lm.second->ground_truth[0]);
+                lm_y_gt.push_back(lm.second->ground_truth[1]);
+                lm_x_pre.push_back(lm.second->data[0]);
+                lm_y_pre.push_back(lm.second->data[1]);
             }
         }
 
@@ -227,25 +238,36 @@ int main(int argc, char const *argv[])
 
         if (program.get<bool>("--plot"))
         {
+            const auto poses = graph.getPoses();
+
+            for (const auto& pose : poses)
+            {
+                p_x_post.push_back(pose.second->data[0]);
+                p_y_post.push_back(pose.second->data[1]);
+            }
+
             for (const auto& lm : lms)
             {
-                x_post.push_back(lm.second->data[0]);
-                y_post.push_back(lm.second->data[1]);
+                lm_x_post.push_back(lm.second->data[0]);
+                lm_y_post.push_back(lm.second->data[1]);
             }
 
-            for (size_t i = 0; i < x_post.size(); ++i)
+            for (size_t i = 0; i < lm_x_post.size(); ++i)
             {
-                vec_x.push_back({x_pre[i], x_post[i]});
-                vec_y.push_back({y_pre[i], y_post[i]});
+                lm_vec_x.push_back({lm_x_pre[i], lm_x_post[i]});
+                lm_vec_y.push_back({lm_y_pre[i], lm_y_post[i]});
             }
 
-            for (size_t i = 0; i < vec_x.size(); ++i)
+            for (size_t i = 0; i < lm_vec_x.size(); ++i)
             {
-                matplotlibcpp::plot(vec_x[i], vec_y[i], "tab:gray");
+                matplotlibcpp::plot(lm_vec_x[i], lm_vec_y[i], "tab:gray");
             }
 
-            matplotlibcpp::named_plot("landmark before optimization", x_pre, y_pre, "g.");
-            matplotlibcpp::named_plot("landmark after optimization", x_post, y_post, "r.");
+            matplotlibcpp::named_plot("pose before optimization", p_x_pre, p_y_pre, "y.");
+            matplotlibcpp::named_plot("pose after optimization", p_x_post, p_y_post, "k.");
+            matplotlibcpp::named_plot("landmark ground truth", lm_x_gt, lm_y_gt, "b.");
+            matplotlibcpp::named_plot("landmark before optimization", lm_x_pre, lm_y_pre, "g.");
+            matplotlibcpp::named_plot("landmark after optimization", lm_x_post, lm_y_post, "r.");
 
             matplotlibcpp::legend();
             matplotlibcpp::show();
