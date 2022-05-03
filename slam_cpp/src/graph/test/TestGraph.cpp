@@ -54,4 +54,42 @@ TEST_CASE("Test Graph", "[graph]")
         REQUIRE(graph.getUniqueLandmarks().size() == 1);
     }
 
+    SECTION("Optimizing the Graph")
+    {
+        Graph graph;
+        graph.createPose(std::make_shared<Motion>(1, 1));
+
+        std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
+        perceptions->push_back(std::shared_ptr<Perception>(new Perception(0, 3, 2, 0, 0, 0)));
+        perceptions->push_back(std::shared_ptr<Perception>(new Perception(1, 3, -2, 0, 0, 0)));
+        graph.createLandmark(perceptions);
+
+        graph.createPose(std::make_shared<Motion>(1, 0));
+
+        perceptions->clear();
+        perceptions->push_back(std::shared_ptr<Perception>(new Perception(0, 4, 1, 0, 0, 0)));
+        perceptions->push_back(std::shared_ptr<Perception>(new Perception(1, 4, -1, 0, 0, 0)));
+
+        graph.createLandmark(perceptions);
+
+        auto poses = graph.getPoses();
+        auto lms = graph.getUniqueLandmarks();
+
+        const auto p1_pre = *poses[1];
+        const auto p2_pre = *poses[2];
+        const auto lm1_pre = *lms.begin()->second;
+        const auto lm2_pre = *lms.rbegin()->second;
+
+        REQUIRE(graph.optimize(-1, true));
+
+        const auto p1_post = *poses[1];
+        const auto p2_post = *poses[2];
+        const auto lm1_post = *lms.begin()->second;
+        const auto lm2_post = *lms.rbegin()->second;
+
+        REQUIRE_FALSE(p1_pre == p1_post);
+        REQUIRE_FALSE(p2_pre == p2_post);
+        REQUIRE_FALSE(lm1_pre == lm1_post);
+        REQUIRE_FALSE(lm2_pre == lm2_post);
+    }
 }
