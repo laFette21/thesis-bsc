@@ -24,7 +24,7 @@ Graph::Graph()
  */
 void Graph::createLandmark(const std::shared_ptr<std::vector<PerceptionPtr>>& measurements)
 {
-    for (auto& measurement : *measurements)
+    for (const auto& measurement : *measurements)
     {
         LandmarkPtr lm;
 
@@ -137,7 +137,7 @@ bool Graph::optimize(int quantity, bool report)
         auto measurements = _landmark_measurements[curr->first];
 
         // sorfolytonos adattárolás (vector) -> cache friendly
-        for (auto& lm : _landmarks[curr->first])
+        for (const auto& lm : _landmarks[curr->first])
         {
             auto is_id = [lm](PerceptionPtr obj){ return obj->id == lm->id; };
             auto meas = std::find_if(measurements->begin(), measurements->end(), is_id);
@@ -172,7 +172,7 @@ bool Graph::optimize(int quantity, bool report)
 // GCOVR_EXCL_START
 std::ostream& operator<<(std::ostream& os, const Graph& graph)
 {
-    for (auto& pose : graph._poses)
+    for (const auto& pose : graph._poses)
     {
         os << pose.first << ' ' << *pose.second << std::endl;
     }

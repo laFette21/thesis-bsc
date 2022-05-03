@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
                 std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
                 bool b = false;
 
-                for (auto& lm_id : first_lm_ids)
+                for (const auto& lm_id : first_lm_ids)
                     b |= current_perceptions.contains(lm_id);
 
                 if (!b)
@@ -85,7 +85,7 @@ int main(int argc, char const *argv[])
                 std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
                 bool b = false;
 
-                for (auto& lm_id : first_lm_ids)
+                for (const auto& lm_id : first_lm_ids)
                     b |= current_perceptions.contains(lm_id);
 
                 if (b)
@@ -94,7 +94,7 @@ int main(int argc, char const *argv[])
 
             std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
 
-            for (auto& perception : enor.current().perceptions)
+            for (const auto& perception : enor.current().perceptions)
                 perceptions->push_back(std::shared_ptr<Perception>(new Perception(perception)));
 
             graph.createLandmark(perceptions);

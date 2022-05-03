@@ -10,7 +10,7 @@ std::set<int> Data::getLandmarkIdsFromPerceptions(const std::vector<Perception>&
 {
     std::set<int> result;
 
-    for (auto& perception : perceptions)
+    for (const auto& perception : perceptions)
         result.insert(perception.id);
 
     return result;
@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
     os << std::setprecision(16);
     os << "motion: " << obj.motion << std::endl;
 
-    for (auto& perception : obj.perceptions)
+    for (const auto& perception : obj.perceptions)
         os << "perception: " << perception << std::endl; 
 
     return os;
