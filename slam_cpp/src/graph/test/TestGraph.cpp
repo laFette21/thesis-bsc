@@ -15,6 +15,19 @@ TEST_CASE("Test Graph", "[graph]")
         REQUIRE(*graph.getPoses().begin()->second == Pose());
     }
 
+    SECTION("Creating a Landmark")
+    {
+        Graph graph;
+        std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
+        perceptions->push_back(std::shared_ptr<Perception>(new Perception(0, 0, 0, 0, 0, 0)));
+        graph.createLandmark(perceptions);
+
+        REQUIRE(graph.getUniqueLandmarks().size() == 1);
+
+        graph.createLandmark(perceptions);
+        REQUIRE(graph.getUniqueLandmarks().size() == 1);
+    }
+
     SECTION("Creating a Pose with Motion(0, 0)")
     {
         Graph graph;
@@ -39,19 +52,6 @@ TEST_CASE("Test Graph", "[graph]")
         REQUIRE(graph.getUniqueLandmarks().size() == 0);
         REQUIRE(*graph.getPoses().begin()->second == Pose());
         REQUIRE_FALSE(*graph.getPoses().rbegin()->second == Pose());
-    }
-
-    SECTION("Creating a Landmark")
-    {
-        Graph graph;
-        std::shared_ptr<std::vector<std::shared_ptr<Perception>>> perceptions(new std::vector<std::shared_ptr<Perception>>());
-        perceptions->push_back(std::shared_ptr<Perception>(new Perception(0, 0, 0, 0, 0, 0)));
-        graph.createLandmark(perceptions);
-
-        REQUIRE(graph.getUniqueLandmarks().size() == 1);
-
-        graph.createLandmark(perceptions);
-        REQUIRE(graph.getUniqueLandmarks().size() == 1);
     }
 
     SECTION("Optimizing the Graph")
