@@ -39,7 +39,7 @@ else:
                     if line[0] == '###':
                         break
 
-                    plt.plot(float(line[1]), float(line[2]), '.', color='orange')
+                    plt.plot(float(line[1]), float(line[2]), '.', color='y')
 
                 for line in iF:
                     line = line.strip().split()
@@ -47,7 +47,7 @@ else:
                     if line[0] == '###':
                         break
 
-                    plt.plot(float(line[1]), float(line[2]), 'o', color='green')
+                    plt.plot(float(line[1]), float(line[2]), '.', color='green')
 
                 for line in iF:
                     line = line.strip().split()
@@ -63,8 +63,8 @@ else:
                     if line[0] == '===':
                         break
             
-                    plt.plot(float(line[4]), float(line[5]), 'o', color='blue')
-                    plt.plot(float(line[1]), float(line[2]), 'o', color='red')
+                    plt.plot(float(line[4]), float(line[5]), '.', color='blue')
+                    plt.plot(float(line[1]), float(line[2]), '.', color='red')
 
                 plt.axis("equal")
                 plt.show()
