@@ -111,6 +111,28 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 
     SECTION("Noise is non-zero")
     {
+        SECTION("Random noise")
+        {
+            DataEnumerator enor1("input1.txt", 0.1, true);
+            DataEnumerator enor2("input1.txt", 0.1, true);
+
+            enor1.first();
+            enor2.first();
+
+            REQUIRE_FALSE(enor1.current() == enor2.current());
+        }
+
+        SECTION("Pseudo-random noise")
+        {
+            DataEnumerator enor1("input1.txt", 0.1, false);
+            DataEnumerator enor2("input1.txt", 0.1, false);
+
+            enor1.first();
+            enor2.first();
+
+            REQUIRE(enor1.current() == enor2.current());
+        }
+
         SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
         {
             DataEnumerator enor("input1.txt", 0.1, false);
