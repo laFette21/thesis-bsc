@@ -45,17 +45,17 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 {
     SECTION("Constructing a DataEnumerator object with non-existing file")
     {
-        REQUIRE_THROWS(DataEnumerator("non-existing-file", 0));
+        REQUIRE_THROWS(DataEnumerator("non-existing-file", 0, false));
     }
 
     SECTION("Constructing a DataEnumerator object with existing empty file")
     {
-        REQUIRE_NOTHROW(DataEnumerator("empty.txt", 0));
+        REQUIRE_NOTHROW(DataEnumerator("empty.txt", 0, false));
     }
 
     SECTION("Reading from an empty file")
     {
-        DataEnumerator enor("empty.txt", 0);
+        DataEnumerator enor("empty.txt", 0, false);
 
         REQUIRE_FALSE(enor.end()); 
 
@@ -69,7 +69,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
     {
         SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
         {
-            DataEnumerator enor("input1.txt", 0);
+            DataEnumerator enor("input1.txt", 0, false);
 
             REQUIRE_FALSE(enor.end()); 
 
@@ -81,7 +81,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 
         SECTION("Reading 2 Data(1 Motion, 2 Perceptions) from a non-empty file")
         {
-            DataEnumerator enor("input2.txt", 0);
+            DataEnumerator enor("input2.txt", 0, false);
 
             REQUIRE_FALSE(enor.end()); 
 
@@ -98,7 +98,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 
         SECTION("Reading only Motion data from a non-empty file")
         {
-            DataEnumerator enor("input3.txt", 0);
+            DataEnumerator enor("input3.txt", 0, false);
 
             REQUIRE_FALSE(enor.end()); 
 
@@ -113,7 +113,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
     {
         SECTION("Reading a Data(1 Motion, 2 Perceptions) from a non-empty file")
         {
-            DataEnumerator enor("input1.txt", 0.1);
+            DataEnumerator enor("input1.txt", 0.1, false);
 
             REQUIRE_FALSE(enor.end()); 
 
@@ -125,7 +125,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 
         SECTION("Reading 2 Data(1 Motion, 2 Perceptions) from a non-empty file")
         {
-            DataEnumerator enor("input2.txt", 0.1);
+            DataEnumerator enor("input2.txt", 0.1, false);
 
             REQUIRE_FALSE(enor.end()); 
 
@@ -142,7 +142,7 @@ TEST_CASE("Test DataEnumerator", "[dataenumerator]")
 
         SECTION("Reading only Motion data from a non-empty file")
         {
-            DataEnumerator enor("input3.txt", 0.1);
+            DataEnumerator enor("input3.txt", 0.1, false);
 
             REQUIRE_FALSE(enor.end()); 
 

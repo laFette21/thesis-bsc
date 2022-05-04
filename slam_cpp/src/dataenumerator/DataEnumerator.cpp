@@ -41,12 +41,13 @@ std::ostream& operator<<(std::ostream& os, const Data& obj)
  * 
  * @param filename
  */
-DataEnumerator::DataEnumerator(const std::string& filename, double noise)
+DataEnumerator::DataEnumerator(const std::string& filename, double noise, bool random)
 {
     _file.open(filename);
     if (_file.fail()) throw std::runtime_error("OPEN ERROR");
     _end = false;
     _noise = noise;
+    _rng.seed(random ? std::random_device()() : 1000000);
 }
 
 /**
@@ -92,13 +93,10 @@ void DataEnumerator::next()
 
         if (_noise != 0)
         {
-            // std::random_device rd;
-            std::mt19937 gen;
-            gen.seed(1000000);
             std::normal_distribution<double> normal(0, _noise);
 
-            motion.data[0] += motion.data[0] * normal(gen);
-            motion.data[1] += motion.data[1] * normal(gen);
+            motion.data[0] += motion.data[0] * normal(_rng);
+            motion.data[1] += motion.data[1] * normal(_rng);
         }
 
         while (!_end && type == 'p')

@@ -30,7 +30,7 @@ struct Data
 class DataEnumerator
 {
 public:
-    DataEnumerator(const std::string&, double);
+    DataEnumerator(const std::string&, double, bool);
 
     Data current() const { return _data; }
     void first();
@@ -42,6 +42,7 @@ private:
 
     std::ifstream _file;
     std::stringstream _ss;
+    std::mt19937 _rng;
     Data _data;
     bool _end;
     double _noise;

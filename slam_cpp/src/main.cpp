@@ -34,6 +34,10 @@ int main(int argc, char const *argv[])
         .help("plots the built map and the poses using matplotlib")
         .default_value(false)
         .implicit_value(true);
+    program.add_argument("-r", "--random")
+        .help("uses random seed for noise generation")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("-s", "--segmentation")
         .help("enables the segmentation of the data")
         .default_value(false)
@@ -53,7 +57,11 @@ int main(int argc, char const *argv[])
     try
     {
         std::ofstream output(program.get<std::string>("output_file"));
-        DataEnumerator enor(program.get<std::string>("input_file"), program.get<double>("--noise"));
+        DataEnumerator enor(
+            program.get<std::string>("input_file"),
+            program.get<double>("--noise"),
+            program.get<bool>("--random")
+        );
         Graph graph;
         std::vector<double> lm_x_gt, lm_y_gt, lm_x_pre, lm_y_pre, lm_x_post, lm_y_post;
         std::vector<double> p_x_pre, p_y_pre, p_x_post, p_y_post;
