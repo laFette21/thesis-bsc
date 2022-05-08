@@ -14,6 +14,7 @@ from utils import *
 
 
 def main(path: str, directions: bool, noisy: bool, perception: bool):
+    # Reading the csv file
     with open(path) as iF:
         _, filename = os.path.split(path)
         filename = filename.split('.')[0]
@@ -26,6 +27,7 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
         x.append(x[0])
         y.append(y[0])
 
+    # Interpolating the read points to be more dense
     track = interpolate_data([x, y])
     points = [Point(track[0][i], track[1][i]) for i in range(len(track[0]))]
 
@@ -58,29 +60,40 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
 
     # plt.plot(x, y, '.', color='red')
 
+    # Calculating the first and second derivatives of x and y
     dx_dt = np.gradient(x)
     dy_dt = np.gradient(y)
     d2x_dt2 = np.gradient(dx_dt)
     d2y_dt2 = np.gradient(dy_dt)
 
+    # Calculating the curvature
     curvature = np.abs(dx_dt * d2y_dt2 - dy_dt * d2x_dt2) / (dx_dt * dx_dt + dy_dt * dy_dt) ** 1.5
+
+    # Normalizing the curvature data
     velocity_data = normalize_data_into_range(curvature, 0, 0.7)
     cone_distance_data = normalize_data_into_range(curvature, 0, 1 - (MIN_CONE_DISTANCE / CONE_DISTANCE))
 
+    # Using the normalized curvature data to calculate velocity
     for i in range(len(velocity_data)):
         velocity_data[i] = (1 - velocity_data[i]) * VELOCITY
 
+    # Using the normalized curvature data to calculate cone distance
     for i in range(len(cone_distance_data)):
         cone_distance_data[i] = (1 - cone_distance_data[i]) * CONE_DISTANCE
 
+    # Combining the track points and orientation into poses
     poses = [Pose(points[i], orientation[i]) for i in range(len(points))]
     velocity_data = velocity_data * MOTION_SAMPLING
+
+    # Making the poses list more sparse depending on the sampling rate and velocity
     sparse_poses, sparse_pose_indices = select_data(poses, velocity_data)
     velocity_data = velocity_data / MOTION_SAMPLING
 
+    # Creating motion data out of the sparse poses
     motion: list[Motion] = []
 
     for i in range(len(sparse_poses) - 1):
+        # Calculating the angular velocity
         angle1 = sparse_poses[i + 1].get_orientation()
         angle2 = sparse_poses[i].get_orientation()
         if np.copysign(1, angle1) == np.copysign(1, angle2):
@@ -98,6 +111,7 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
 
     motion.append(Motion(motion[-1].get_speed(), motion[-1].get_angular_velocity()))
 
+    # Making the poses list more sparse depending on the sampling rates
     x = [p.get_coord().get_x() for i, p in enumerate(sparse_poses) if i % int(PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0]
     y = [p.get_coord().get_y() for i, p in enumerate(sparse_poses) if i % int(PERCEPTION_SAMPLING / MOTION_SAMPLING) == 0]
 
@@ -113,9 +127,11 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
                 color='green',
             )
 
+    # Calculating the first derivative of x and y
     gradient_x = np.gradient(x)
     gradient_y = np.gradient(y)
 
+    # Calculating the cone positions with the help of the gradient
     left_side_points: list[Point] = []
     right_side_points: list[Point] = []
 
@@ -130,6 +146,8 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
             y[i] - TRACK_HALF_WIDTH * (gradient_x[i] / gradient_norm)
         ))
 
+    # Interpolating the cone positions to be more dense and then 
+    # making it sparse again depending on the cone distance data
     data = [
         [p.get_x() for p in left_side_points],
         [p.get_y() for p in left_side_points]
@@ -148,7 +166,8 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
         [c.get_coord().get_x() for c in sparse_blue_cones],
         [c.get_coord().get_y() for c in sparse_blue_cones],
         '.',
-        color='blue'
+        color='blue',
+        label='blue cone'
     )
 
     data = [
@@ -168,10 +187,13 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
         [c.get_coord().get_x() for c in sparse_yellow_cones],
         [c.get_coord().get_y() for c in sparse_yellow_cones],
         '.',
-        color='orange'
+        color='orange',
+        label='yellow cone'
     )
 
     all_cones = [*sparse_blue_cones, *sparse_yellow_cones]
+
+    # Calculating the actual poses from the motion data
     actual_poses = np.zeros((len(motion), 3))
     ts = MOTION_SAMPLING
 
@@ -180,8 +202,9 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
         actual_poses[i, 1] = actual_poses[i - 1, 1] + motion[i].get_speed() * ts * np.sin(actual_poses[i - 1, 2] + motion[i].get_angular_velocity() * ts / 2)
         actual_poses[i, 2] = actual_poses[i - 1, 2] + motion[i].get_angular_velocity() * ts
 
-    plt.plot(actual_poses[:, 0], actual_poses[:, 1], '.', color='purple')
+    plt.plot(actual_poses[:, 0], actual_poses[:, 1], '.', color='purple', label='actual pose')
 
+    # Writing the simulation data to a file
     write_data_to_file(
         f'output_{filename}.txt',
         cones=all_cones.copy(),
@@ -204,6 +227,10 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
         for p in actual_poses:
             print(p[0], p[1], p[2], file=oF)
 
+    plt.xlabel('x[m]')
+    plt.ylabel('y[m]')
+    plt.title('Simulation')
+    plt.legend()
     plt.axis('equal')
     plt.savefig('track.png', dpi=500)
     plt.show()
