@@ -57,15 +57,41 @@ TEST_CASE("Test RotationMatrix2D", "[utility]")
         REQUIRE(matrix == RotationMatrix2D<double>(-2 * M_PI));
     }
 }
-/*
+
 TEST_CASE("Test LandmarkErrorFunction", "[utility]")
 {
-    SECTION("")
+    SECTION("Perceiving landmarks from the Pose(0, 0, 0) in a semicircle")
     {
+        constexpr int size = 4;
+        const double sqrt2_2 = sqrt(2) / 2;
+        double error = 0;
+        Eigen::Vector3d pose{0, 0, 0};
+        std::vector<Eigen::Vector2d> residuals(size, {0, 0});
+        std::vector<Eigen::Vector2d> landmarks{
+            {0, 1},
+            {sqrt2_2, sqrt2_2},
+            {1, 0},
+            {sqrt2_2, -sqrt2_2},
+            {0, -1}
+        };
+        std::vector<Eigen::Vector2d> measurements{
+            {1, M_PI_2},
+            {1, M_PI_4},
+            {1, 0},
+            {1, -M_PI_4},
+            {1, -M_PI_2}
+        };
 
+        for (size_t i = 0; i < size; ++i)
+            LandmarkErrorFunction()(pose.data(), landmarks[i].data(), measurements[i].data(), residuals[i].data());
+
+        for (size_t i = 0; i < size; ++i)
+            error += residuals[i](0) + residuals[i](1);
+
+        REQUIRE(error == Approx(0).margin(1e-12));
     }
 }
-*/
+
 TEST_CASE("Test PoseErrorFunction", "[utility]")
 {
     SECTION("Straight line with constant 1 m/s velocity and 0 rad/s angular velocity")
