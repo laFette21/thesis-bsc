@@ -8,8 +8,6 @@
 #include "Types.h"
 #include "Utils.h"
 
-enum DebugOption { POSE, LANDMARK, BOTH };
-
 class Graph
 {
     using LandmarkPtr = std::shared_ptr<Landmark>;
@@ -29,8 +27,6 @@ public:
     friend std::ostream& operator<<(std::ostream&, const Graph&);
 
 private:
-    std::vector<double> debug(ceres::Problem&, const DebugOption&);
-
     ceres::CostFunction *_pose_cost_function, *_landmark_cost_function;
     ceres::Solver::Options _options;
     std::map<int, PosePtr> _poses;
@@ -39,8 +35,6 @@ private:
     std::map<int, LandmarkPtr> _unique_landmarks;
     std::map<int, MotionPtr> _pose_measurements;
     std::map<int, std::shared_ptr<std::vector<PerceptionPtr>>> _landmark_measurements;
-    std::vector<ceres::ResidualBlockId> _pose_residual_ids;
-    std::vector<ceres::ResidualBlockId> _lm_residual_ids;
     int _last_id;
 };
 

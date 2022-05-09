@@ -70,34 +70,6 @@ void Graph::createPose(const MotionPtr& measurement)
 }
 
 /**
- * @brief Evaluate the residuals of the graph for debug purposes.
- * 
- * @param problem
- * @param debug_option
- * @return std::vector<double> containing the evaluated residuals.
- */
-std::vector<double> Graph::debug(ceres::Problem& problem, const DebugOption& debug_option)
-{
-    double total_cost = 0.0;
-    std::vector<double> evaluated_residuals;
-    ceres::Problem::EvaluateOptions options;
-
-    if (debug_option == DebugOption::POSE)
-        options.residual_blocks = _pose_residual_ids;
-    else if (debug_option == DebugOption::LANDMARK)
-        options.residual_blocks = _lm_residual_ids;
-    else
-    {
-        options.residual_blocks = _pose_residual_ids;
-        options.residual_blocks.insert(options.residual_blocks.end(), _lm_residual_ids.begin(), _lm_residual_ids.end());
-    }
-
-    problem.Evaluate(options, &total_cost, &evaluated_residuals, nullptr, nullptr);
-
-    return evaluated_residuals;
-}
-
-/**
  * @brief Optimize the graph.
  * 
  * The method builds up the optimization problem with the help of Ceres
@@ -124,7 +96,7 @@ bool Graph::optimize(int quantity, bool report)
 
     while (curr != _poses.end())
     {
-        ceres::ResidualBlockId pose_residual_id = problem.AddResidualBlock(
+        problem.AddResidualBlock(
             _pose_cost_function,
             nullptr,
             prev->second->data,
@@ -132,7 +104,6 @@ bool Graph::optimize(int quantity, bool report)
             _pose_measurements[curr->first]->data
         );
         problem.SetParameterBlockConstant(_pose_measurements[curr->first]->data);
-        _pose_residual_ids.push_back(pose_residual_id);
 
         auto measurements = _landmark_measurements[curr->first];
 
@@ -142,11 +113,10 @@ bool Graph::optimize(int quantity, bool report)
             auto is_id = [lm](PerceptionPtr obj){ return obj->id == lm->id; };
             auto meas = std::find_if(measurements->begin(), measurements->end(), is_id);
 
-            ceres::ResidualBlockId lm_residual_id = problem.AddResidualBlock(
+            problem.AddResidualBlock(
                 _landmark_cost_function, nullptr, prev->second->data, lm->data, meas->get()->data
             );
             problem.SetParameterBlockConstant(meas->get()->data);
-            _lm_residual_ids.push_back(lm_residual_id);
         }
 
         prev++;
