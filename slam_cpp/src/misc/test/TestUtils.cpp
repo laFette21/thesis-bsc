@@ -9,52 +9,28 @@ TEST_CASE("Test RotationMatrix2D", "[utility]")
         REQUIRE(Eigen::Matrix2d::Identity() == RotationMatrix2D<double>(0));
     }
 
-    SECTION("Matrix with theta = π")
+    SECTION("Matrix with theta = π/2")
     {
         Eigen::Matrix2d matrix;
 
-        const double sin_theta = sin(M_PI);
-        const double cos_theta = cos(M_PI);
+        const double sin_theta = sin(M_PI_2);
+        const double cos_theta = cos(M_PI_2);
 
         matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
 
-        REQUIRE(matrix == RotationMatrix2D<double>(M_PI));
+        REQUIRE(matrix == RotationMatrix2D<double>(M_PI_2));
     }
 
-    SECTION("Matrix with theta = -π")
+    SECTION("Matrix with theta = -π/2")
     {
         Eigen::Matrix2d matrix;
 
-        const double sin_theta = sin(-M_PI);
-        const double cos_theta = cos(-M_PI);
+        const double sin_theta = sin(-M_PI_2);
+        const double cos_theta = cos(-M_PI_2);
 
         matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
 
-        REQUIRE(matrix == RotationMatrix2D<double>(-M_PI));
-    }
-
-    SECTION("Matrix with theta = 2π")
-    {
-        Eigen::Matrix2d matrix;
-
-        const double sin_theta = sin(2 * M_PI);
-        const double cos_theta = cos(2 * M_PI);
-
-        matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
-
-        REQUIRE(matrix == RotationMatrix2D<double>(2 * M_PI));
-    }
-
-    SECTION("Matrix with theta = -2π")
-    {
-        Eigen::Matrix2d matrix;
-
-        const double sin_theta = sin(-2 * M_PI);
-        const double cos_theta = cos(-2 * M_PI);
-
-        matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
-
-        REQUIRE(matrix == RotationMatrix2D<double>(-2 * M_PI));
+        REQUIRE(matrix == RotationMatrix2D<double>(-M_PI_2));
     }
 }
 
