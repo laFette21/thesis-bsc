@@ -90,7 +90,7 @@ TEST_CASE("Test PoseErrorFunction", "[utility]")
         REQUIRE(error == Approx(0).margin(1e-12));
     }
 
-    SECTION("Oval line with constant 10 m/s velocity and variable angular velocity")
+    SECTION("Oval line with constant 1 m/s velocity and variable angular velocity")
     {
         double error = 0;
         std::vector<Motion> measurements{
