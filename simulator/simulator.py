@@ -125,6 +125,7 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
                 [sparse_poses[i].get_coord().get_x(), x2],
                 [sparse_poses[i].get_coord().get_y(), y2],
                 color='green',
+                label=('directional vector' if i == 0 else None),
             )
 
     # Calculating the first derivative of x and y
