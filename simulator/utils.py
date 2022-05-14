@@ -100,6 +100,7 @@ def write_data_to_file(filename, cones, poses, motion, noisy, perception):
                             [poses[i, 0], x2],
                             [poses[i, 1], y2],
                             color='red',
+                            label=('perception' if i == 0 and j == 0 else None),
                         )
 
                 for c in cones_in_range:
