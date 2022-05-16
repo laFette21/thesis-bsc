@@ -78,6 +78,16 @@ struct Pose
 
     Pose(double x = 0, double y = 0, double psi = 0): data{x, y, psi} {}
 
+    Pose operator+(const Motion& obj)
+    {
+        Pose res;
+
+        res.data[0] = data[0] + obj.data[0] * timestamp * cos(data[2] + obj.data[1] * timestamp * 0.5);
+        res.data[1] = data[1] + obj.data[0] * timestamp * sin(data[2] + obj.data[1] * timestamp * 0.5);
+        res.data[2] = data[2] + obj.data[1] * timestamp;
+
+        return res;
+    }
     Pose& operator+=(const Motion& obj)
     {
         data[0] += obj.data[0] * timestamp * cos(data[2] + obj.data[1] * timestamp * 0.5);

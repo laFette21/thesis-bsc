@@ -34,8 +34,8 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<PerceptionPtr>>& me
                 new Landmark(measurement->id, 0, 0, measurement->color, measurement->ground_truth[0], measurement->ground_truth[1])
             );
 
-            lm->data[0] = _prev_global_pose.data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + _prev_global_pose.data[2]);
-            lm->data[1] = _prev_global_pose.data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + _prev_global_pose.data[2]);
+            lm->data[0] = _poses.rbegin()->second->data[0] + measurement->data[0] * ceres::cos(measurement->data[1] + _poses.rbegin()->second->data[2]);
+            lm->data[1] = _poses.rbegin()->second->data[1] + measurement->data[0] * ceres::sin(measurement->data[1] + _poses.rbegin()->second->data[2]);
 
             _unique_landmarks[measurement->id] = lm;
         }
@@ -60,13 +60,11 @@ void Graph::createLandmark(const std::shared_ptr<std::vector<PerceptionPtr>>& me
  */
 void Graph::createPose(const MotionPtr& measurement)
 {
-    _prev_global_pose += *measurement;
+    _poses[_last_id++] = PosePtr(new Pose(*_poses.rbegin()->second + *measurement));
 
     measurement->data[0] *= timestamp;
     measurement->data[1] *= timestamp * 0.5;
-    _pose_measurements[_last_id] = measurement;
-
-    _poses[_last_id++] = PosePtr(new Pose(_prev_global_pose));
+    _pose_measurements[_last_id - 1] = measurement;
 }
 
 /**
