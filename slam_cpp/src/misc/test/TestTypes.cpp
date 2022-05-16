@@ -69,6 +69,30 @@ TEST_CASE("Test Pose", "[types]")
         REQUIRE(pose == Pose(1, 2, 3));
     }
 
+    SECTION("operator+ with default Motion object")
+    {
+        const Motion motion;
+        Pose pose;
+        Pose pose2(pose + motion);
+
+        REQUIRE(pose == pose2);
+    }
+
+    SECTION("operator+ with custom Motion object")
+    {
+        const Motion motion(1, 1);
+        Pose pose;
+        Pose pose2(pose + motion);
+
+        REQUIRE(pose2 == Pose(0.05 * cos(0.025), 0.05 * sin(0.025), 0.05));
+
+        Pose pose3(pose2 + motion);
+
+        REQUIRE(pose3.data[0] == Approx(0.05 * cos(0.025) + 0.05 * cos(0.075)).margin(1e-12));
+        REQUIRE(pose3.data[1] == Approx(0.05 * sin(0.025) + 0.05 * sin(0.075)).margin(1e-12));
+        REQUIRE(pose3.data[2] == Approx(0.1).margin(1e-12));
+    }
+
     SECTION("operator+= with default Motion object")
     {
         const Motion motion;
