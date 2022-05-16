@@ -35,7 +35,6 @@ private:
     ceres::Solver::Options _options;
     std::map<int, PosePtr> _poses;
     std::map<int, std::vector<LandmarkPtr>> _landmarks;
-    Pose _prev_global_pose;
     std::map<int, LandmarkPtr> _unique_landmarks;
     std::map<int, MotionPtr> _pose_measurements;
     std::map<int, std::shared_ptr<std::vector<PerceptionPtr>>> _landmark_measurements;
