@@ -13,7 +13,7 @@ from pose import Pose
 from utils import *
 
 
-def main(path: str, directions: bool, noisy: bool, perception: bool):
+def main(path, directions, noisy, perception):
     # Reading the csv file
     with open(path) as iF:
         _, filename = os.path.split(path)
@@ -90,7 +90,7 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
     velocity_data = velocity_data / MOTION_SAMPLING
 
     # Creating motion data out of the sparse poses
-    motion: list[Motion] = []
+    motion = []
 
     for i in range(len(sparse_poses) - 1):
         # Calculating the angular velocity
@@ -133,8 +133,8 @@ def main(path: str, directions: bool, noisy: bool, perception: bool):
     gradient_y = np.gradient(y)
 
     # Calculating the cone positions with the help of the gradient
-    left_side_points: list[Point] = []
-    right_side_points: list[Point] = []
+    left_side_points = []
+    right_side_points = []
 
     for i in range(len(x)):
         gradient_norm = np.sqrt(gradient_x[i] * gradient_x[i] + gradient_y[i] * gradient_y[i])

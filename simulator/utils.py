@@ -1,5 +1,3 @@
-from typing import Union
-
 import matplotlib.pyplot as plt
 from numpy import arctan2, cos, linspace, max, min, pi, radians, sin, size
 from numpy.random import normal
@@ -11,8 +9,8 @@ from point import Point
 from pose import Pose
 
 
-def get_cones_in_front_of_car(pose, cones: list[Cone]):
-    result: list[tuple[Cone, float, float]] = []
+def get_cones_in_front_of_car(pose, cones):
+    result = []
     pose = Pose(Point(pose[0], pose[1]), pose[2])
     cones_in_range = [
         Cone(c.get_index(), c.get_color(), c.get_coord())
@@ -49,7 +47,7 @@ def normalize_data_into_range(data, min_val, max_val):
     return (data - min(data)) / (max(data) - min(data)) * (max_val - min_val) + min_val
 
 
-def select_data(data: list[Union[Cone, Pose]], sparsity: list[float]):
+def select_data(data, sparsity):
     result = [data[0]]
     indices = [0]
     distance = 0
