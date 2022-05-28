@@ -1,4 +1,5 @@
 # Slam algorithm implementation
+For more substantial description please read the Szakdolgozat.pdf file.
 
 ## Simulator
 Perception simulator for driverless cars
