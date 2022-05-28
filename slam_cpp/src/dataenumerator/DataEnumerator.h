@@ -11,6 +11,10 @@
 
 #include "Types.h"
 
+/**
+ * @brief Struct that represents a Data object which contains a motion and a vector of perceptions.
+ * 
+ */
 struct Data
 {
     Motion motion;
@@ -27,6 +31,10 @@ struct Data
     friend std::ostream& operator<<(std::ostream&, const Data&);
 };
 
+/**
+ * @brief Class that represents a DataEnumerator object which is used to read and process data from a file.
+ * 
+ */
 class DataEnumerator
 {
 public:

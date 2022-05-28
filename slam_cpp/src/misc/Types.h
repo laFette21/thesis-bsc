@@ -5,6 +5,10 @@
 
 static constexpr double timestamp = 0.05; // 50 ms
 
+/**
+ * @brief Struct that represents a Landmark object.
+ * 
+ */
 struct Landmark
 {
     double data[2];
@@ -29,6 +33,10 @@ struct Landmark
     // GCOVR_EXCL_STOP
 };
 
+/**
+ * @brief Struct that represents a Motion object.
+ * 
+ */
 struct Motion
 {
     double data[2];
@@ -48,6 +56,10 @@ struct Motion
     // GCOVR_EXCL_STOP
 };
 
+/**
+ * @brief Struct that represents a Perception object.
+ * 
+ */
 struct Perception
 {
     double data[2];
@@ -72,12 +84,23 @@ struct Perception
     // GCOVR_EXCL_STOP
 };
 
+/**
+ * @brief Struct that represents a Pose object.
+ * 
+ */
 struct Pose
 {
     double data[3];
 
     Pose(double x = 0, double y = 0, double psi = 0): data{x, y, psi} {}
 
+    /**
+     * @brief Calculate the current pose from the previous pose and the motion
+     * using the motion model described in the thesis.
+     * 
+     * @param obj
+     * @return Pose
+     */
     Pose operator+(const Motion& obj)
     {
         Pose res;
@@ -88,6 +111,13 @@ struct Pose
 
         return res;
     }
+    /**
+     * @brief Calculate the current pose from the previous pose and the motion
+     * using the motion model described in the thesis.
+     * 
+     * @param obj
+     * @return Pose&
+     */
     Pose& operator+=(const Motion& obj)
     {
         data[0] += obj.data[0] * timestamp * cos(data[2] + obj.data[1] * timestamp * 0.5);

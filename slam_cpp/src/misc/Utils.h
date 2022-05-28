@@ -3,6 +3,13 @@
 
 #include <ceres/ceres.h>
 
+/**
+ * @brief Calculate the rotation matrix of a given angle.
+ * 
+ * @tparam T
+ * @param theta
+ * @return Eigen::Matrix2<T>
+ */
 template <typename T>
 Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
 {
@@ -16,6 +23,11 @@ Eigen::Matrix2<T> RotationMatrix2D(const T& theta)
     return result;
 }
 
+/**
+ * @brief Struct that represents a LandmarkErrorFunction functor used in the optimization.
+ * The behavior is described in the thesis.
+ * 
+ */
 struct LandmarkErrorFunction
 {
     template <typename T>
@@ -39,6 +51,11 @@ struct LandmarkErrorFunction
     }
 };
 
+/**
+ * @brief Struct that represents a PoseErrorFunction functor used in the optimization.
+ * The behavior is described in the thesis.
+ * 
+ */
 struct PoseErrorFunction
 {
     template <typename T>

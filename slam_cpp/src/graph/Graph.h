@@ -8,6 +8,10 @@
 #include "Types.h"
 #include "Utils.h"
 
+/**
+ * @brief Class that represents a Graph object which is used to store and optimize the data.
+ * 
+ */
 class Graph
 {
     using LandmarkPtr = std::shared_ptr<Landmark>;

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <chrono>
 
 #include <ceres/ceres.h>
 
@@ -8,9 +7,6 @@
 #include "Graph.h"
 #include "matplotlibcpp.h"
 #include "argparse.hpp"
-
-#define NORMAL_MODE
-#ifdef NORMAL_MODE
 
 static constexpr int section = (int)(5 / timestamp);
 
@@ -67,7 +63,7 @@ int main(int argc, char const *argv[])
         std::vector<double> p_x_pre, p_y_pre, p_x_post, p_y_post;
         std::vector<std::vector<double>> lm_vec_x, lm_vec_y;
         bool enable_loop_closure = program.get<bool>("--loop_closure");
-        bool flag = true;
+        bool flag = true; // Perception containing id from first_lm_ids was found.
         std::set<int> first_lm_ids;
         int i = 1;
 
@@ -78,26 +74,29 @@ int main(int argc, char const *argv[])
 
         while (!enor.end())
         {
+            // We need to skip the first N batch of perceptions because loop closure
+            // checks if the perception contains an id from the first_lm_ids set
+            // which would be irrelevant for the first N batch of perceptions.
             if (!enable_loop_closure && flag)
             {
                 std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
-                bool b = false;
+                bool id_was_in_first_lm_ids = false;
 
                 for (const auto& lm_id : first_lm_ids)
-                    b |= current_perceptions.contains(lm_id);
+                    id_was_in_first_lm_ids |= current_perceptions.contains(lm_id);
 
-                if (!b)
+                if (!id_was_in_first_lm_ids)
                     flag = false;
             }
             else if (!enable_loop_closure && !flag)
             {
                 std::set<int> current_perceptions = Data::getLandmarkIdsFromPerceptions(enor.current().perceptions);
-                bool b = false;
+                bool id_was_in_first_lm_ids = false;
 
                 for (const auto& lm_id : first_lm_ids)
-                    b |= current_perceptions.contains(lm_id);
+                    id_was_in_first_lm_ids |= current_perceptions.contains(lm_id);
 
-                if (b)
+                if (id_was_in_first_lm_ids)
                     break;
             }
 
@@ -288,82 +287,3 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
-#else
-
-#define CATCH_CONFIG_MAIN
-#include "../include/catch.hpp"
-
-#define EPSILON 0.00001
-
-TEST_CASE("Test RotationMatrix2D", "[utility]")
-{
-    SECTION("Identity matrix with theta = 0")
-    {
-        REQUIRE(Eigen::Matrix2d::Identity() == RotationMatrix2D<double>(0));
-    }
-
-    SECTION("Matrix with theta = 1")
-    {
-        Eigen::Matrix2d matrix;
-
-        const double sin_theta = sin(1);
-        const double cos_theta = cos(1);
-
-        matrix << cos_theta, -sin_theta, sin_theta, cos_theta;
-
-        REQUIRE(matrix == RotationMatrix2D<double>(1));
-    }
-}
-
-TEST_CASE("Test PoseErrorFunction", "[utility]")
-{
-    SECTION("Input data without noise")
-    {
-        DataEnumerator enor("../data/input_kecso_noisy.txt");
-        std::vector<Motion> measurements;
-
-        enor.first();
-
-        while (!enor.end())
-        {
-            measurements.emplace_back(enor.current().motion);
-
-            enor.next();
-        }
-
-        std::vector<Pose> poses{Pose()};
-
-        for (int i = 0; i < measurements.size(); ++i)
-            poses.emplace_back(poses[i] += measurements[i]);
-
-        std::cerr << poses.size() << std::endl;
-
-        std::vector<Eigen::Vector3d> residuals(poses.size(), Eigen::Vector3d());
-
-        for (int i = 0; i < poses.size(); ++i)
-        {
-            measurements[i].data[0] *= 0.05;
-            measurements[i].data[1] *= 0.025;
-
-            PoseErrorFunction()(poses[i].data, poses[i + 1].data, measurements[i].data, residuals[i].data());
-        }
-
-        double error_x = 0, error_y = 0, error_psi = 0;
-
-        for (int i = 0; i < 99; ++i)
-        {
-            error_x += residuals[i](0);
-            error_y += residuals[i](1);
-            error_psi += residuals[i](2);
-        }
-
-        std::cerr << error_x << " " << error_y << " " << error_psi << std::endl;
-
-        REQUIRE(error_x <= EPSILON);
-        REQUIRE(error_y <= EPSILON);
-        REQUIRE(error_psi <= EPSILON);
-    }
-}
-
-#endif
